@@ -17,10 +17,119 @@ if (isBrowser) {
 }
 
 // Deployed contract address and ABI
-const contractAddress = '0x5225Fe0F81d33490C01a476A30FD4be86f28493b'; // Replace with your contract address
+const contractAddress = '0x39bd249860e83fe1269b5b76abeb23a5fbf4d115'; // Replace with your contract address
 const abi = [
-	'function issueCertificate(address student, string memory courseName, string memory studentName, string memory dateIssued) public',
-	'function verifyCertificate(address student) public view returns (tuple(string courseName, string studentName, string dateIssued))'
+	{
+		inputs: [
+			{
+				internalType: 'address',
+				name: 'student',
+				type: 'address'
+			},
+			{
+				internalType: 'string',
+				name: 'courseName',
+				type: 'string'
+			},
+			{
+				internalType: 'string',
+				name: 'studentName',
+				type: 'string'
+			},
+			{
+				internalType: 'string',
+				name: 'email',
+				type: 'string'
+			},
+			{
+				internalType: 'string',
+				name: 'dateIssued',
+				type: 'string'
+			}
+		],
+		name: 'issueCertificate',
+		outputs: [],
+		stateMutability: 'nonpayable',
+		type: 'function'
+	},
+	{
+		inputs: [
+			{
+				internalType: 'address',
+				name: 'student',
+				type: 'address'
+			}
+		],
+		name: 'verifyCertificate',
+		outputs: [
+			{
+				components: [
+					{
+						internalType: 'string',
+						name: 'courseName',
+						type: 'string'
+					},
+					{
+						internalType: 'string',
+						name: 'studentName',
+						type: 'string'
+					},
+					{
+						internalType: 'string',
+						name: 'email',
+						type: 'string'
+					},
+					{
+						internalType: 'string',
+						name: 'dateIssued',
+						type: 'string'
+					}
+				],
+				internalType: 'struct Certificate.CertificateInfo',
+				name: '',
+				type: 'tuple'
+			}
+		],
+		stateMutability: 'view',
+		type: 'function'
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: false,
+				internalType: 'address',
+				name: 'student',
+				type: 'address'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'courseName',
+				type: 'string'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'studentName',
+				type: 'string'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'email',
+				type: 'string'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'dateIssued',
+				type: 'string'
+			}
+		],
+		name: 'CertificateIssued',
+		type: 'event'
+	}
 ];
 
 // Create contract instance only on client-side

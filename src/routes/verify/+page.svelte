@@ -1,53 +1,64 @@
 <script>
-  import { contract } from '$lib/eth';
-  import { ethers } from 'ethers';
+	import { contract } from '$lib/eth';
+	import { ethers } from 'ethers';
+	import { onMount } from 'svelte';
 
-  let verifyAddress = '';
-  let verificationResult = '';
+	let verifyAddress = '';
+	let verificationResult = '';
 
-  const isContractAvailable = contract !== null;
+	const isContractAvailable = contract !== null;
 
-  function sanitizeInput(input) {
-    return input.trim();
-  }
+	function sanitizeInput(input) {
+		return input.trim();
+	}
 
-  function isValidAddress(address) {
-    return ethers.utils.isAddress(address);
-  }
+	function isValidAddress(address) {
+		return ethers.utils.isAddress(address);
+	}
 
-  async function verifyCertificate() {
-    if (!isContractAvailable) {
-      alert('Contract is not available. Ensure you are on the client side.');
-      return;
-    }
-    
-    verifyAddress = sanitizeInput(verifyAddress);
+	async function verifyCertificate() {
+		if (!isContractAvailable) {
+			alert('Contract is not available. Ensure you are on the client side.');
+			return;
+		}
 
-    if (!verifyAddress) {
-      alert('Please provide a student address');
-      return;
-    }
+		verifyAddress = sanitizeInput(verifyAddress);
 
-    if (!isValidAddress(verifyAddress)) {
-      alert('Invalid student address');
-      return;
-    }
-    
-    try {
-      const result = await contract.verifyCertificate(verifyAddress);
-      verificationResult = `Course: ${result.courseName}, Student: ${result.studentName}, Date: ${result.dateIssued}`;
-    } catch (err) {
-      console.error('Error verifying certificate:', err);
-      verificationResult = 'Verification failed or no certificate found.';
-    }
-  }
+		if (!verifyAddress) {
+			alert('Please provide a student address');
+			return;
+		}
+
+		if (!isValidAddress(verifyAddress)) {
+			alert('Invalid student address');
+			return;
+		}
+
+		try {
+			const result = await contract.verifyCertificate(verifyAddress);
+			verificationResult = `Course: ${result.courseName}, Student email: ${result.studentName}, Date: ${result.dateIssued}`;
+		} catch (err) {
+			console.error('Error verifying certificate:', err);
+			verificationResult = 'Verification failed or no certificate found.';
+		}
+	}
+
+	// Check if there's an address in the query parameters
+	onMount(() => {
+		const params = new URLSearchParams(window.location.search);
+		const address = params.get('address');
+		if (address) {
+			verifyAddress = address;
+			verifyCertificate();
+		}
+	});
 </script>
 
 <h1>Verify Certificate</h1>
 
 <div>
-  <h2>Verify Certificate</h2>
-  <input type="text" bind:value={verifyAddress} placeholder="Student Address (Ethereum Address)">
-  <button on:click={verifyCertificate}>Verify Certificate</button>
-  <p>{verificationResult}</p>
+	<h2>Verify Certificate</h2>
+	<input type="text" bind:value={verifyAddress} placeholder="Student Address (Ethereum Address)" />
+	<button on:click={verifyCertificate}>Verify Certificate</button>
+	<p>{verificationResult}</p>
 </div>

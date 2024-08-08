@@ -5,22 +5,24 @@ contract Certificate {
     struct CertificateInfo {
         string courseName;
         string studentName;
+        string email;
         string dateIssued;
     }
 
     mapping(address => CertificateInfo) private certificates;
 
     // Event for issuing certificates
-    event CertificateIssued(address student, string courseName, string studentName, string dateIssued);
+    event CertificateIssued(address student, string courseName, string studentName, string email, string dateIssued);
 
     function issueCertificate(
         address student,
         string memory courseName,
         string memory studentName,
+        string memory email,
         string memory dateIssued
     ) public {
-        certificates[student] = CertificateInfo(courseName, studentName, dateIssued);
-        emit CertificateIssued(student, courseName, studentName, dateIssued);
+        certificates[student] = CertificateInfo(courseName, studentName, email, dateIssued);
+        emit CertificateIssued(student, courseName, studentName, email, dateIssued);
     }
 
     function verifyCertificate(address student)
