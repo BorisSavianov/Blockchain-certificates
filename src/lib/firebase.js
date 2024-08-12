@@ -7,8 +7,10 @@ import {
 	signInWithEmailAndPassword,
 	createUserWithEmailAndPassword,
 	signOut,
-	onAuthStateChanged
+	onAuthStateChanged,
+	updateProfile
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -25,6 +27,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+const db = getFirestore(app);
 
 export {
 	auth,
@@ -33,5 +36,10 @@ export {
 	signInWithEmailAndPassword,
 	createUserWithEmailAndPassword,
 	signOut,
-	onAuthStateChanged
+	onAuthStateChanged,
+	updateProfile,
+	db,
+	doc,
+	setDoc,
+	getDoc
 };

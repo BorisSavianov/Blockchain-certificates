@@ -1,8 +1,7 @@
-<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<title>Kaiadmin - Bootstrap 5 Admin Dashboard</title>
+		<title>Main Page</title>
 		<meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
 		<link rel="icon" href="img/kaiadmin/favicon.ico" type="image/x-icon" />
 
@@ -453,7 +452,7 @@
 											</div>
 										</li>
 										<li>
-											<a class="see-all" href="javascript:void(0);"
+											<a class="see-all" href="/"
 												>See all messages<i class="fa fa-angle-right"></i>
 											</a>
 										</li>
@@ -522,7 +521,7 @@
 											</div>
 										</li>
 										<li>
-											<a class="see-all" href="javascript:void(0);"
+											<a class="see-all" href="/"
 												>See all notifications<i class="fa fa-angle-right"></i>
 											</a>
 										</li>
