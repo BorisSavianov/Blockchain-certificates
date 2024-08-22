@@ -17,35 +17,15 @@ if (isBrowser) {
 }
 
 // Deployed contract address and ABI
-const contractAddress = '0x39bd249860e83fe1269b5b76abeb23a5fbf4d115'; // Replace with your contract address
+const contractAddress = '0x340Da143F4C95d9c40cedD9A3a4f81050eDD0507'; // Replace with your contract address
 const abi = [
 	{
 		inputs: [
-			{
-				internalType: 'address',
-				name: 'student',
-				type: 'address'
-			},
-			{
-				internalType: 'string',
-				name: 'courseName',
-				type: 'string'
-			},
-			{
-				internalType: 'string',
-				name: 'studentName',
-				type: 'string'
-			},
-			{
-				internalType: 'string',
-				name: 'email',
-				type: 'string'
-			},
-			{
-				internalType: 'string',
-				name: 'dateIssued',
-				type: 'string'
-			}
+			{ internalType: 'address', name: 'student', type: 'address' },
+			{ internalType: 'string', name: 'courseName', type: 'string' },
+			{ internalType: 'string', name: 'studentName', type: 'string' },
+			{ internalType: 'string', name: 'email', type: 'string' },
+			{ internalType: 'string', name: 'dateIssued', type: 'string' }
 		],
 		name: 'issueCertificate',
 		outputs: [],
@@ -53,41 +33,19 @@ const abi = [
 		type: 'function'
 	},
 	{
-		inputs: [
-			{
-				internalType: 'address',
-				name: 'student',
-				type: 'address'
-			}
-		],
-		name: 'verifyCertificate',
+		inputs: [{ internalType: 'address', name: 'student', type: 'address' }],
+		name: 'getCertificatesByAddress',
 		outputs: [
 			{
 				components: [
-					{
-						internalType: 'string',
-						name: 'courseName',
-						type: 'string'
-					},
-					{
-						internalType: 'string',
-						name: 'studentName',
-						type: 'string'
-					},
-					{
-						internalType: 'string',
-						name: 'email',
-						type: 'string'
-					},
-					{
-						internalType: 'string',
-						name: 'dateIssued',
-						type: 'string'
-					}
+					{ internalType: 'string', name: 'courseName', type: 'string' },
+					{ internalType: 'string', name: 'studentName', type: 'string' },
+					{ internalType: 'string', name: 'email', type: 'string' },
+					{ internalType: 'string', name: 'dateIssued', type: 'string' }
 				],
-				internalType: 'struct Certificate.CertificateInfo',
+				internalType: 'struct Certificate.CertificateInfo[]',
 				name: '',
-				type: 'tuple'
+				type: 'tuple[]'
 			}
 		],
 		stateMutability: 'view',
@@ -96,36 +54,11 @@ const abi = [
 	{
 		anonymous: false,
 		inputs: [
-			{
-				indexed: false,
-				internalType: 'address',
-				name: 'student',
-				type: 'address'
-			},
-			{
-				indexed: false,
-				internalType: 'string',
-				name: 'courseName',
-				type: 'string'
-			},
-			{
-				indexed: false,
-				internalType: 'string',
-				name: 'studentName',
-				type: 'string'
-			},
-			{
-				indexed: false,
-				internalType: 'string',
-				name: 'email',
-				type: 'string'
-			},
-			{
-				indexed: false,
-				internalType: 'string',
-				name: 'dateIssued',
-				type: 'string'
-			}
+			{ indexed: false, internalType: 'address', name: 'student', type: 'address' },
+			{ indexed: false, internalType: 'string', name: 'courseName', type: 'string' },
+			{ indexed: false, internalType: 'string', name: 'studentName', type: 'string' },
+			{ indexed: false, internalType: 'string', name: 'email', type: 'string' },
+			{ indexed: false, internalType: 'string', name: 'dateIssued', type: 'string' }
 		],
 		name: 'CertificateIssued',
 		type: 'event'
@@ -135,4 +68,17 @@ const abi = [
 // Create contract instance only on client-side
 export const contract =
 	isBrowser && provider ? new ethers.Contract(contractAddress, abi, signer) : null;
+
+export async function getCertificatesByAddress(address) {
+	if (contract) {
+		try {
+			return await contract.getCertificatesByAddress(address);
+		} catch (err) {
+			console.error('Error fetching certificates:', err);
+			throw err; // Re-throw to be caught in front-end code
+		}
+	}
+	throw new Error('Contract is not available');
+}
+
 export { provider, signer };

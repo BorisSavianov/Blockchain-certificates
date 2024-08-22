@@ -9,7 +9,8 @@ contract Certificate {
         string dateIssued;
     }
 
-    mapping(address => CertificateInfo) private certificates;
+    // Mapping from a student's address to a list of certificates
+    mapping(address => CertificateInfo[]) private certificates;
 
     // Event for issuing certificates
     event CertificateIssued(address student, string courseName, string studentName, string email, string dateIssued);
@@ -21,17 +22,18 @@ contract Certificate {
         string memory email,
         string memory dateIssued
     ) public {
-        certificates[student] = CertificateInfo(courseName, studentName, email, dateIssued);
+        // Store the certificate in the array
+        certificates[student].push(CertificateInfo(courseName, studentName, email, dateIssued));
         emit CertificateIssued(student, courseName, studentName, email, dateIssued);
     }
 
-    function verifyCertificate(address student)
+    // Function to get all certificates associated with a student
+    function getCertificatesByAddress(address student)
         public
         view
-        returns (CertificateInfo memory)
+        returns (CertificateInfo[] memory)
     {
-        CertificateInfo memory certificate = certificates[student];
-        require(bytes(certificate.courseName).length > 0, "No certificate found for this address");
-        return certificate;
+        // Return certificates for the address
+        return certificates[student];
     }
 }

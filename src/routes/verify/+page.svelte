@@ -3,8 +3,12 @@
 	import { ethers } from 'ethers';
 	import { onMount } from 'svelte';
 
+	let userAddress = '';
+	let allCertificates = [];
 	let verifyAddress = '';
-	let verificationResult = '';
+	let verificationResults = [];
+	let isLoading = false;
+	let errorMessage = '';
 
 	const isContractAvailable = contract !== null;
 
@@ -14,6 +18,47 @@
 
 	function isValidAddress(address) {
 		return ethers.utils.isAddress(address);
+	}
+
+	async function fetchAllCertificates(address) {
+		if (!isContractAvailable) {
+			errorMessage = 'Contract is not available. Ensure you are on the client side.';
+			isLoading = false;
+			return;
+		}
+
+		address = sanitizeInput(address);
+
+		if (!address) {
+			errorMessage = 'Please provide a valid Ethereum address.';
+			isLoading = false;
+			return;
+		}
+
+		if (!isValidAddress(address)) {
+			errorMessage = 'Invalid Ethereum address';
+			isLoading = false;
+			return;
+		}
+
+		try {
+			const results = await contract.getCertificatesByAddress(address);
+			if (results.length === 0) {
+				allCertificates = ['No certificates found for this address.'];
+			} else {
+				allCertificates = results.map((cert) => ({
+					courseName: cert.courseName,
+					studentName: cert.studentName,
+					email: cert.email,
+					dateIssued: cert.dateIssued
+				}));
+			}
+		} catch (err) {
+			console.error('Error fetching certificates:', err);
+			errorMessage = 'Failed to fetch certificates.';
+		} finally {
+			isLoading = false;
+		}
 	}
 
 	async function verifyCertificate() {
@@ -34,31 +79,74 @@
 			return;
 		}
 
+		isLoading = true;
+		errorMessage = '';
+		verificationResults = [];
+
 		try {
-			const result = await contract.verifyCertificate(verifyAddress);
-			verificationResult = `Course: ${result.courseName}, Student email: ${result.studentName}, Date: ${result.dateIssued}`;
+			const results = await contract.getCertificatesByAddress(verifyAddress);
+			if (results.length === 0) {
+				verificationResults.push('No certificates found for this address.');
+			} else {
+				verificationResults = results.map(
+					(cert) =>
+						`Course: ${cert.courseName}, Student: ${cert.studentName}, Email: ${cert.email}, Date: ${cert.dateIssued}`
+				);
+			}
 		} catch (err) {
 			console.error('Error verifying certificate:', err);
-			verificationResult = 'Verification failed or no certificate found.';
+			errorMessage = 'Verification failed or no certificate found.';
+		} finally {
+			isLoading = false;
 		}
 	}
 
-	// Check if there's an address in the query parameters
-	onMount(() => {
-		const params = new URLSearchParams(window.location.search);
-		const address = params.get('address');
-		if (address) {
-			verifyAddress = address;
-			verifyCertificate();
+	onMount(async () => {
+		isLoading = true;
+
+		const provider = new ethers.providers.Web3Provider(window.ethereum);
+		const signer = provider.getSigner();
+
+		try {
+			userAddress = await signer.getAddress();
+			await fetchAllCertificates(userAddress);
+		} catch (err) {
+			console.error('Error fetching user address:', err);
+			errorMessage = 'Failed to retrieve Ethereum address.';
+		} finally {
+			isLoading = false;
 		}
 	});
 </script>
 
-<h1>Verify Certificate</h1>
+<h1>Your Certificates</h1>
 
 <div>
-	<h2>Verify Certificate</h2>
-	<input type="text" bind:value={verifyAddress} placeholder="Student Address (Ethereum Address)" />
-	<button on:click={verifyCertificate}>Verify Certificate</button>
-	<p>{verificationResult}</p>
+	{#if isLoading}
+		<p>Loading...</p>
+	{:else if errorMessage}
+		<p>{errorMessage}</p>
+	{:else if allCertificates.length > 0}
+		<ul>
+			{#each allCertificates as certificate}
+				<li>
+					Course: {certificate.courseName}, Student: {certificate.studentName}, Email: {certificate.email},
+					Date: {certificate.dateIssued}
+				</li>
+			{/each}
+		</ul>
+	{:else}
+		<p>No certificates found for your Ethereum address.</p>
+	{/if}
 </div>
+
+<h2>Verify Certificate</h2>
+<input type="text" bind:value={verifyAddress} placeholder="Student Address (Ethereum Address)" />
+<button on:click={verifyCertificate} disabled={isLoading}>Verify Certificate</button>
+{#if !isLoading && verificationResults.length > 0}
+	<ul>
+		{#each verificationResults as result}
+			<li>{result}</li>
+		{/each}
+	</ul>
+{/if}

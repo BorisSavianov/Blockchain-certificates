@@ -21,16 +21,6 @@ export async function handle({ event, resolve }) {
 
 	const url = new URL(event.request.url);
 
-	// Redirect unauthenticated users to the login page
-	if (!user && url.pathname !== '/login') {
-		throw redirect(302, '/login');
-	}
-
-	// Redirect authenticated users away from the login page
-	if (user && url.pathname === '/login') {
-		throw redirect(302, '/');
-	}
-
 	// Continue with the request
 	return resolve(event);
 }
