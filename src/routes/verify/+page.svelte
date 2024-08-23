@@ -116,6 +116,14 @@
 		} finally {
 			isLoading = false;
 		}
+
+		// Check if there's an address in the query parameters
+		const params = new URLSearchParams(window.location.search);
+		const address = params.get('address');
+		if (address) {
+			verifyAddress = address;
+			verifyCertificate();
+		}
 	});
 </script>
 
