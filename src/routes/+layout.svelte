@@ -1,24 +1,38 @@
+<!-- src/routes/+layout.svelte -->
 <script>
-	import { onMount } from 'svelte';
-	import { getAuth, onAuthStateChanged } from 'firebase/auth';
+	import { auth } from '$lib/firebase';
+	import { onAuthStateChanged, getIdToken } from 'firebase/auth';
+	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment'; // Import browser from SvelteKit
 
-	onMount(() => {
-		const auth = getAuth();
-
+	if (browser) {
+		// Only run this code on the client side
 		onAuthStateChanged(auth, async (user) => {
 			if (user) {
-				const idToken = await user.getIdToken();
+				const token = await getIdToken(user);
 
-				// Store the token in a global store or use it directly in your requests
-				fetch('/protected', {
-					method: 'GET',
+				// Send request with the token if necessary
+				const response = await fetch('/protected', {
 					headers: {
-						Authorization: `Bearer ${idToken}`
+						Authorization: `Bearer ${token}`
 					}
 				});
+
+				const data = await response.json();
+				console.log('Authenticated data:', data);
+
+				// You can also redirect the user to a different route
+				if (window.location.pathname === '/login') {
+					goto('/'); // Redirect to home page if already logged in
+				}
+			} else {
+				// Redirect to login if not authenticated
+				if (window.location.pathname !== '/login') {
+					goto('/login');
+				}
 			}
 		});
-	});
+	}
 </script>
 
 <slot />
