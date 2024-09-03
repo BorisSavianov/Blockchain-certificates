@@ -1,4 +1,3 @@
-// src/lib/firebase.js
 import { initializeApp } from 'firebase/app';
 import {
 	getAuth,
@@ -12,15 +11,15 @@ import {
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
-	apiKey: 'AIzaSyDJzd4W7SWB8gksfHG6-jl84nE_Cvbwtxg',
-	authDomain: 'blockchain-app-da339.firebaseapp.com',
-	projectId: 'blockchain-app-da339',
-	storageBucket: 'blockchain-app-da339.appspot.com',
-	messagingSenderId: '288693749296',
-	appId: '1:288693749296:web:440826615fad4ff01c4ff5',
-	measurementId: 'G-1R09BXEF9P'
+	apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+	authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+	projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+	storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+	messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+	appId: import.meta.env.VITE_FIREBASE_APP_ID,
+	measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
