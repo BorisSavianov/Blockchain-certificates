@@ -1,3 +1,7 @@
+<script>
+	import Logout from '../components/Logout.svelte';
+</script>
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -7,7 +11,9 @@
 		<link rel="icon" href="img/kaiadmin/favicon.ico" type="image/x-icon" />
 
 		<!-- Fonts and icons -->
-		<script src="js/plugin/webfont/webfont.min.js"></script>
+
+		<script src="js/plugin/webfont/webfont.min.js">
+<script/>
 		<script>
 			WebFont.load({
 				google: { families: ['Public Sans:300,400,500,600,700'] },
@@ -614,11 +620,7 @@
 											<li>
 												<div class="user-box">
 													<div class="avatar-lg">
-														<img
-															src="img/profile.jpg"
-															alt="image profile"
-															class="avatar-img rounded"
-														/>
+														<img src="img/profile.jpg" alt="profile" class="avatar-img rounded" />
 													</div>
 													<div class="u-text">
 														<h4>Hizrian</h4>
@@ -637,7 +639,7 @@
 												<div class="dropdown-divider"></div>
 												<a class="dropdown-item" href="/">Account Setting</a>
 												<div class="dropdown-divider"></div>
-												<a class="dropdown-item" href="/">Logout</a>
+												<Logout />
 											</li>
 										</div>
 									</ul>
