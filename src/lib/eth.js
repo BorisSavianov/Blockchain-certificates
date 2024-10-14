@@ -17,7 +17,7 @@ if (isBrowser) {
 }
 
 // Deployed contract address and ABI
-const contractAddress = '0x43C74e982aa5Fa30E0983FdE210FD966951cfEAD'; // Replace with your contract address
+const contractAddress = '0x7488b967e6a77f831caeb491d4877775a484a30c'; // Replace with your contract address
 const abi = [
 	{
 		inputs: [
@@ -25,7 +25,8 @@ const abi = [
 			{ internalType: 'string', name: 'courseName', type: 'string' },
 			{ internalType: 'string', name: 'studentName', type: 'string' },
 			{ internalType: 'string', name: 'email', type: 'string' },
-			{ internalType: 'string', name: 'dateIssued', type: 'string' }
+			{ internalType: 'string', name: 'dateIssued', type: 'string' },
+			{ internalType: 'bytes', name: 'signature', type: 'bytes' } // Include signature in contract
 		],
 		name: 'issueCertificate',
 		outputs: [],
@@ -41,7 +42,8 @@ const abi = [
 					{ internalType: 'string', name: 'courseName', type: 'string' },
 					{ internalType: 'string', name: 'studentName', type: 'string' },
 					{ internalType: 'string', name: 'email', type: 'string' },
-					{ internalType: 'string', name: 'dateIssued', type: 'string' }
+					{ internalType: 'string', name: 'dateIssued', type: 'string' },
+					{ internalType: 'bytes', name: 'signature', type: 'bytes' } // Signature part of the certificate structure
 				],
 				internalType: 'struct Certificate.CertificateInfo[]',
 				name: '',
@@ -58,7 +60,8 @@ const abi = [
 			{ indexed: false, internalType: 'string', name: 'courseName', type: 'string' },
 			{ indexed: false, internalType: 'string', name: 'studentName', type: 'string' },
 			{ indexed: false, internalType: 'string', name: 'email', type: 'string' },
-			{ indexed: false, internalType: 'string', name: 'dateIssued', type: 'string' }
+			{ indexed: false, internalType: 'string', name: 'dateIssued', type: 'string' },
+			{ indexed: false, internalType: 'bytes', name: 'signature', type: 'bytes' } // Log signature in event
 		],
 		name: 'CertificateIssued',
 		type: 'event'
@@ -69,13 +72,66 @@ const abi = [
 export const contract =
 	isBrowser && provider ? new ethers.Contract(contractAddress, abi, signer) : null;
 
+// Function to sign certificate details
+export async function signCertificate(studentAddress, courseName, studentName, email, dateIssued) {
+	if (!signer) {
+		throw new Error('Signer not available');
+	}
+
+	// Hash the certificate details
+	const certificateHash = ethers.utils.solidityKeccak256(
+		['address', 'string', 'string', 'string', 'string'],
+		[studentAddress, courseName, studentName, email, dateIssued]
+	);
+
+	// Sign the hash
+	const signature = await signer.signMessage(ethers.utils.arrayify(certificateHash));
+
+	return signature;
+}
+
+// Function to issue a certificate with a digital signature
+export async function issueCertificate(studentAddress, courseName, studentName, email, dateIssued) {
+	if (!contract) {
+		throw new Error('Contract is not available');
+	}
+
+	try {
+		// Generate the signature for the certificate
+		const signature = await signCertificate(
+			studentAddress,
+			courseName,
+			studentName,
+			email,
+			dateIssued
+		);
+
+		// Send the transaction to issue the certificate with the signature
+		const tx = await contract.issueCertificate(
+			studentAddress,
+			courseName,
+			studentName,
+			email,
+			dateIssued,
+			signature, // Include the signature
+			{ gasLimit: 100000000 } // Directly pass gasLimit as a number
+		);
+		await tx.wait();
+		return 'Certificate issued successfully';
+	} catch (err) {
+		console.error('Error issuing certificate:', err);
+		throw err; // Re-throw to handle on frontend
+	}
+}
+
+// Function to get certificates by student address
 export async function getCertificatesByAddress(address) {
 	if (contract) {
 		try {
 			return await contract.getCertificatesByAddress(address);
 		} catch (err) {
 			console.error('Error fetching certificates:', err);
-			throw err; // Re-throw to be caught in front-end code
+			throw err;
 		}
 	}
 	throw new Error('Contract is not available');

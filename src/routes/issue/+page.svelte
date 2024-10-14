@@ -32,6 +32,23 @@
 		return datePattern.test(date);
 	}
 
+	// Function to sign certificate details
+	async function signCertificate(studentAddress, courseName, studentName, email, dateIssued) {
+		if (!user) {
+			throw new Error('Signer not available');
+		}
+
+		// Hash the certificate details
+		const certificateHash = ethers.utils.solidityKeccak256(
+			['address', 'string', 'string', 'string', 'string'],
+			[studentAddress, courseName, studentName, email, dateIssued]
+		);
+
+		// Sign the hash
+		const signature = await contract.signer.signMessage(ethers.utils.arrayify(certificateHash));
+		return signature;
+	}
+
 	async function generateCertificatePDF(
 		studentAddress,
 		courseName,
@@ -111,14 +128,26 @@
 		}
 
 		try {
+			// Generate the signature
+			const signature = await signCertificate(
+				studentAddress,
+				courseName,
+				studentName,
+				user.email,
+				dateIssued
+			);
+
+			// Send the transaction to issue the certificate with the signature
 			const tx = await contract.issueCertificate(
 				studentAddress,
 				courseName,
-				studentName, // Pass studentName to the contract
-				user.email, // Pass email
+				studentName,
+				user.email,
 				dateIssued,
+				signature, // Pass the generated signature
 				{ gasLimit: 1000000 }
 			);
+
 			await tx.wait();
 			alert('Certificate issued successfully');
 

@@ -1,5 +1,5 @@
 <script>
-	import { contract } from '$lib/eth';
+	import { contract, provider, signer } from '$lib/eth';
 	import { ethers } from 'ethers';
 	import { onMount } from 'svelte';
 
@@ -48,9 +48,7 @@
 			} else {
 				allCertificates = results.map((cert) => ({
 					courseName: cert.courseName,
-					studentName: cert.studentName,
-					email: cert.email,
-					dateIssued: cert.dateIssued
+					dateIssued: cert.dateIssued // Only store course name and date issued
 				}));
 			}
 		} catch (err) {
@@ -59,6 +57,30 @@
 		} finally {
 			isLoading = false;
 		}
+	}
+
+	// Function to verify that the certificate's signature is valid
+	async function verifySignature(certificate, studentAddress) {
+		// Hash the certificate details
+		const certificateHash = ethers.utils.solidityKeccak256(
+			['address', 'string', 'string', 'string', 'string'],
+			[
+				studentAddress,
+				certificate.courseName,
+				certificate.studentName,
+				certificate.email,
+				certificate.dateIssued
+			]
+		);
+
+		// Recover the address that signed the message
+		const recoveredAddress = ethers.utils.verifyMessage(
+			ethers.utils.arrayify(certificateHash),
+			certificate.signature
+		);
+
+		// Check if the recovered address matches the studentAddress
+		return recoveredAddress.toLowerCase() === studentAddress.toLowerCase();
 	}
 
 	async function verifyCertificate() {
@@ -88,10 +110,11 @@
 			if (results.length === 0) {
 				verificationResults.push('No certificates found for this address.');
 			} else {
-				verificationResults = results.map(
-					(cert) =>
-						`Course: ${cert.courseName}, Student: ${cert.studentName}, Email: ${cert.email}, Date: ${cert.dateIssued}`
-				);
+				for (const cert of results) {
+					const isValid = await verifySignature(cert, verifyAddress);
+					const result = `Course: ${cert.courseName}, Student: ${cert.studentName}, Email: ${cert.email}, Date: ${cert.dateIssued}, Signature: ${isValid ? 'Valid' : 'Invalid'}`;
+					verificationResults.push(result);
+				}
 			}
 		} catch (err) {
 			console.error('Error verifying certificate:', err);
@@ -103,9 +126,6 @@
 
 	onMount(async () => {
 		isLoading = true;
-
-		const provider = new ethers.providers.Web3Provider(window.ethereum);
-		const signer = provider.getSigner();
 
 		try {
 			userAddress = await signer.getAddress();
@@ -138,8 +158,8 @@
 		<ul>
 			{#each allCertificates as certificate}
 				<li>
-					Course: {certificate.courseName}, Student: {certificate.studentName}, Email: {certificate.email},
-					Date: {certificate.dateIssued}
+					Course: {certificate.courseName}, Date: {certificate.dateIssued}
+					<!-- Only showing course name and date -->
 				</li>
 			{/each}
 		</ul>
