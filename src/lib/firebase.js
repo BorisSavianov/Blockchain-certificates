@@ -40,5 +40,6 @@ export {
 	db,
 	doc,
 	setDoc,
-	getDoc
+	getDoc,
+	GoogleAuthProvider
 };

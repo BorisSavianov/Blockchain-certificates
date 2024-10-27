@@ -18,32 +18,27 @@
 
 	let email = '';
 	let password = '';
-	let userRole = ''; // For registration role selection
-	let displayName = ''; // For user display name
-	let user = null;
+	let userRole = '';
+	let displayName = '';
 	let isRightPanelActive = false;
 
+	// Handle Firebase Authentication State on mount
 	onMount(() => {
-		// Handle Firebase Authentication State on mount
-		const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+		const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
 			if (firebaseUser) {
-				// Check if the user has a role set in Firestore
 				const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
 				if (userDoc.exists()) {
-					// User has a role, redirect to home
 					goto('/');
 				} else {
-					// User doesn't have a role, prompt for role selection
+					// Prompt for role selection in a safer way, consider using a modal instead
 					userRole = prompt('Select your role (student/organization):');
 					if (userRole) {
 						await setDoc(doc(db, 'users', firebaseUser.uid), {
 							displayName: firebaseUser.displayName || 'Anonymous',
 							role: userRole
 						});
-						console.log('Role set for user:', userRole);
 						goto('/');
 					} else {
-						// If role is not selected, sign out the user
 						await auth.signOut();
 						goto('/login');
 					}
@@ -52,7 +47,7 @@
 		});
 
 		// Cleanup on component unmount
-		return () => unsubscribe();
+		return () => unsubscribeAuth();
 	});
 
 	// Register user with email and password
@@ -61,8 +56,8 @@
 			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 			const newUser = userCredential.user;
 
-			await updateProfile(newUser, { displayName: displayName });
-			await setDoc(doc(db, 'users', newUser.uid), { displayName: displayName, role: userRole });
+			await updateProfile(newUser, { displayName });
+			await setDoc(doc(db, 'users', newUser.uid), { displayName, role: userRole });
 
 			console.log('User registered:', newUser);
 			alert(`Registered as ${userRole}`);
@@ -92,10 +87,8 @@
 			const userCredential = await signInWithPopup(auth, googleProvider);
 			const googleUser = userCredential.user;
 
-			// Check if the user has a role set in Firestore
 			const userDoc = await getDoc(doc(db, 'users', googleUser.uid));
 			if (!userDoc.exists()) {
-				// Prompt user for role if not set
 				userRole = prompt('Select your role (student/organization):');
 				if (userRole) {
 					await setDoc(doc(db, 'users', googleUser.uid), {
@@ -103,9 +96,7 @@
 						role: userRole
 					});
 					console.log('User signed in with Google and role set:', userRole);
-					alert(`Signed in as ${userRole}`);
 				} else {
-					// If role is not selected, sign out the user
 					await auth.signOut();
 					alert('Role is required. Please try signing in again.');
 					return;
