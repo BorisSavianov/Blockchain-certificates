@@ -1,4 +1,3 @@
-<!-- src/routes/+page.svelte -->
 <script>
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/authStore.js';
@@ -152,7 +151,7 @@
 								</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="pages/tables.html">
+								<a class="nav-link" href="/izdaj">
 									<div
 										class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 									>
@@ -191,7 +190,7 @@
 								</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="pages/billing.html">
+								<a class="nav-link" href="/">
 									<div
 										class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 									>
@@ -226,11 +225,11 @@
 											</g>
 										</svg>
 									</div>
-									<span class="nav-link-text ms-1">Cerificates</span>
+									<span class="nav-link-text ms-1">Certificates</span>
 								</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" on:click={navigateToProfile}>
+								<a class="nav-link" href="/profile">
 									<div
 										class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 									>

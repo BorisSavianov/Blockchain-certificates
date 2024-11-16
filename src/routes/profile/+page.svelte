@@ -161,7 +161,7 @@
 					</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="pages/tables.html">
+					<a class="nav-link" href="/izdaj">
 						<div
 							class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 						>
@@ -200,7 +200,7 @@
 					</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="pages/billing.html">
+					<a class="nav-link" href="/">
 						<div
 							class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 						>
@@ -239,7 +239,7 @@
 					</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link active" href="pages/profile.html">
+					<a class="nav-link active" href="/profile">
 						<div
 							class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 						>
@@ -282,14 +282,6 @@
 					</a>
 				</li>
 			</ul>
-		</div>
-		<div class="sidenav-footer mx-3">
-			<div class="card card-background shadow-none card-background-mask-secondary" id="sidenavCard">
-				<div
-					class="full-background"
-					style="background-image: url('assets/img/curved-images/white-curved.jpg')"
-				></div>
-			</div>
 		</div>
 	</aside>
 	<div class="main-content position-relative max-height-vh-100 h-100">
