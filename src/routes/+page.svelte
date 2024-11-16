@@ -1,5 +1,6 @@
 <!-- src/routes/+page.svelte -->
 <script>
+	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/authStore.js';
 	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -18,6 +19,43 @@
 
 	// Cleanup the subscription on component destroy
 	onDestroy(unsubscribe);
+
+	function navigateToProfile() {
+		goto('/profile');
+	}
+
+	onMount(() => {
+		const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
+		const iconSidenav = document.getElementById('iconSidenav');
+		const sidenav = document.getElementById('sidenav-main');
+		const innerBody = document.getElementById('inner-body');
+		let className = 'g-sidenav-pinned';
+
+		function toggleSidenav() {
+			console.log('Toggling sidenav');
+			if (innerBody.classList.contains(className)) {
+				innerBody.classList.remove(className);
+				setTimeout(() => {
+					sidenav.classList.remove('bg-white');
+				}, 100);
+				sidenav.classList.remove('bg-transparent');
+			} else {
+				innerBody.classList.add(className);
+				sidenav.classList.add('bg-white');
+				sidenav.classList.remove('bg-transparent');
+				iconSidenav.classList.remove('d-none');
+			}
+		}
+
+		iconNavbarSidenav?.addEventListener('click', toggleSidenav);
+		iconSidenav?.addEventListener('click', toggleSidenav);
+
+		// Cleanup event listeners when the component is destroyed
+		return () => {
+			iconNavbarSidenav?.removeEventListener('click', toggleSidenav);
+			iconSidenav?.removeEventListener('click', toggleSidenav);
+		};
+	});
 </script>
 
 {#if auth.loading}
@@ -49,13 +87,6 @@
 				<script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
 				<!-- CSS Files -->
 				<link id="pagestyle" href="assets/css/soft-ui-dashboard.css?v=1.1.0" rel="stylesheet" />
-				<!-- Nepcha Analytics (nepcha.com) -->
-				<!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
-				<script
-					defer
-					data-site="YOUR_DOMAIN_HERE"
-					src="https://api.nepcha.com/js/nepcha-analytics.js"
-				></script>
 			</head>
 
 			<body id="inner-body" class="g-sidenav-show bg-gray-100">
@@ -69,11 +100,7 @@
 							aria-hidden="true"
 							id="iconSidenav"
 						></i>
-						<a
-							class="navbar-brand m-0"
-							href=" https://demos.creative-tim.com/soft-ui-dashboard/pages/dashboard.html "
-							target="_blank"
-						>
+						<a class="navbar-brand m-0" href="/">
 							<img
 								src="assets/img/logo-ct-dark.png"
 								class="navbar-brand-img h-100"
@@ -86,7 +113,7 @@
 					<div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
 						<ul class="navbar-nav">
 							<li class="nav-item">
-								<a class="nav-link active" href="pages/dashboard.html">
+								<a class="nav-link active" href="/">
 									<div
 										class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 									>
@@ -203,7 +230,7 @@
 								</a>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="/profile">
+								<a class="nav-link" on:click={navigateToProfile}>
 									<div
 										class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 									>
@@ -1456,13 +1483,6 @@
 										<ul class="nav nav-footer justify-content-center justify-content-lg-end">
 											<li class="nav-item">
 												<a
-													href="https://www.creative-tim.com"
-													class="nav-link text-muted"
-													target="_blank">Creative Tim</a
-												>
-											</li>
-											<li class="nav-item">
-												<a
 													href="https://www.creative-tim.com/presentation"
 													class="nav-link text-muted"
 													target="_blank">About Us</a
@@ -1489,33 +1509,6 @@
 						</footer>
 					</div>
 				</main>
-
-				<script>
-					const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
-					const iconSidenav = document.getElementById('iconSidenav');
-					const sidenav = document.getElementById('sidenav-main');
-					const innerBody = document.getElementById('inner-body');
-					let className = 'g-sidenav-pinned';
-
-					iconNavbarSidenav.addEventListener('click', toggleSidenav);
-					iconSidenav.addEventListener('click', toggleSidenav);
-
-					function toggleSidenav() {
-						console.log('Toggling sidenav');
-						if (innerBody.classList.contains(className)) {
-							innerBody.classList.remove(className);
-							setTimeout(() => {
-								sidenav.classList.remove('bg-white');
-							}, 100);
-							sidenav.classList.remove('bg-transparent');
-						} else {
-							innerBody.classList.add(className);
-							sidenav.classList.add('bg-white');
-							sidenav.classList.remove('bg-transparent');
-							iconSidenav.classList.remove('d-none');
-						}
-					}
-				</script>
 
 				<script>
 					var win = navigator.platform.indexOf('Win') > -1;

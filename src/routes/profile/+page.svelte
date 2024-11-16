@@ -1,8 +1,9 @@
 <script>
 	import { onMount } from 'svelte';
-	import { getAuth } from 'firebase/auth';
+	import { getAuth, signOut } from 'firebase/auth';
 	import { getFirestore, doc, getDoc } from 'firebase/firestore';
 	import { auth, db } from '$lib/firebase'; // Adjust according to your file structure
+	import { goto } from '$app/navigation';
 
 	let userPhoto = '';
 	let displayName = '';
@@ -28,6 +29,51 @@
 			}
 		}
 	});
+
+	onMount(() => {
+		const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
+		const iconSidenav = document.getElementById('iconSidenav');
+		const sidenav = document.getElementById('sidenav-main');
+		const innerBody = document.getElementById('inner-body');
+		let className = 'g-sidenav-pinned';
+
+		function toggleSidenav() {
+			console.log('Toggling sidenav');
+			if (innerBody.classList.contains(className)) {
+				innerBody.classList.remove(className);
+				setTimeout(() => {
+					sidenav.classList.remove('bg-white');
+				}, 100);
+				sidenav.classList.remove('bg-transparent');
+			} else {
+				innerBody.classList.add(className);
+				sidenav.classList.add('bg-white');
+				sidenav.classList.remove('bg-transparent');
+				iconSidenav.classList.remove('d-none');
+			}
+		}
+
+		iconNavbarSidenav?.addEventListener('click', toggleSidenav);
+		iconSidenav?.addEventListener('click', toggleSidenav);
+
+		// Cleanup event listeners when the component is destroyed
+		return () => {
+			iconNavbarSidenav?.removeEventListener('click', toggleSidenav);
+			iconSidenav?.removeEventListener('click', toggleSidenav);
+		};
+	});
+
+	function SignOut() {
+		const auth = getAuth();
+		signOut(auth)
+			.then(() => {
+				alert('Successfuly signed out.');
+				goto('/login');
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
 </script>
 
 <head>
@@ -67,10 +113,7 @@
 				aria-hidden="true"
 				id="iconSidenav"
 			></i>
-			<a
-				class="navbar-brand m-0"
-				href=" https://demos.creative-tim.com/soft-ui-dashboard/pages/dashboard.html "
-			>
+			<a class="navbar-brand m-0" href="/">
 				<img src="assets/img/logo-ct-dark.png" class="navbar-brand-img h-100" alt="main_logo" />
 				<span class="ms-1 font-weight-bold">Soft UI Dashboard 3</span>
 			</a>
@@ -266,113 +309,6 @@
 				</nav>
 				<div class="collapse navbar-collapse me-md-0 me-sm-4 mt-sm-0 mt-2" id="navbar">
 					<div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>
-					<ul class="navbar-nav justify-content-end">
-						<li class="nav-item d-xl-none ps-3 pe-0 d-flex align-items-center">
-							<a href="javascript:;" class="nav-link text-white p-0">
-								<a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">
-									<div class="sidenav-toggler-inner">
-										<i class="sidenav-toggler-line bg-white"></i>
-										<i class="sidenav-toggler-line bg-white"></i>
-										<i class="sidenav-toggler-line bg-white"></i>
-									</div>
-								</a>
-							</a>
-						</li>
-						<li class="nav-item dropdown pe-2 d-flex align-items-center">
-							<ul
-								class="dropdown-menu dropdown-menu-end px-2 py-3 ms-n4"
-								aria-labelledby="dropdownMenuButton"
-							>
-								<li class="mb-2">
-									<a class="dropdown-item border-radius-md" href="javascript:;">
-										<div class="d-flex py-1">
-											<div class="my-auto">
-												<img src="assets/img/team-2.jpg" class="avatar avatar-sm me-3" />
-											</div>
-											<div class="d-flex flex-column justify-content-center">
-												<h6 class="text-sm font-weight-normal mb-1">
-													<span class="font-weight-bold">New message</span> from Laur
-												</h6>
-												<p class="text-xs text-secondary mb-0">
-													<i class="fa fa-clock me-1"></i>
-													13 minutes ago
-												</p>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="mb-2">
-									<a class="dropdown-item border-radius-md" href="javascript:;">
-										<div class="d-flex py-1">
-											<div class="my-auto">
-												<img
-													src="assets/img/small-logos/logo-spotify.svg"
-													class="avatar avatar-sm bg-gradient-dark me-3"
-												/>
-											</div>
-											<div class="d-flex flex-column justify-content-center">
-												<h6 class="text-sm font-weight-normal mb-1">
-													<span class="font-weight-bold">New album</span> by Travis Scott
-												</h6>
-												<p class="text-xs text-secondary mb-0">
-													<i class="fa fa-clock me-1"></i>
-													1 day
-												</p>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li>
-									<a class="dropdown-item border-radius-md" href="javascript:;">
-										<div class="d-flex py-1">
-											<div class="avatar avatar-sm bg-gradient-secondary me-3 my-auto">
-												<svg
-													width="12px"
-													height="12px"
-													viewBox="0 0 43 36"
-													version="1.1"
-													xmlns="http://www.w3.org/2000/svg"
-													xmlns:xlink="http://www.w3.org/1999/xlink"
-												>
-													<title>credit-card</title>
-													<g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-														<g
-															transform="translate(-2169.000000, -745.000000)"
-															fill="#FFFFFF"
-															fill-rule="nonzero"
-														>
-															<g transform="translate(1716.000000, 291.000000)">
-																<g transform="translate(453.000000, 454.000000)">
-																	<path
-																		class="color-background"
-																		d="M43,10.7482083 L43,3.58333333 C43,1.60354167 41.3964583,0 39.4166667,0 L3.58333333,0 C1.60354167,0 0,1.60354167 0,3.58333333 L0,10.7482083 L43,10.7482083 Z"
-																		opacity="0.593633743"
-																	></path>
-																	<path
-																		class="color-background"
-																		d="M0,16.125 L0,32.25 C0,34.2297917 1.60354167,35.8333333 3.58333333,35.8333333 L39.4166667,35.8333333 C41.3964583,35.8333333 43,34.2297917 43,32.25 L43,16.125 L0,16.125 Z M19.7083333,26.875 L7.16666667,26.875 L7.16666667,23.2916667 L19.7083333,23.2916667 L19.7083333,26.875 Z M35.8333333,26.875 L28.6666667,26.875 L28.6666667,23.2916667 L35.8333333,23.2916667 L35.8333333,26.875 Z"
-																	></path>
-																</g>
-															</g>
-														</g>
-													</g>
-												</svg>
-											</div>
-											<div class="d-flex flex-column justify-content-center">
-												<h6 class="text-sm font-weight-normal mb-1">
-													Payment successfully completed
-												</h6>
-												<p class="text-xs text-secondary mb-0">
-													<i class="fa fa-clock me-1"></i>
-													2 days
-												</p>
-											</div>
-										</div>
-									</a>
-								</li>
-							</ul>
-						</li>
-					</ul>
 				</div>
 			</div>
 		</nav>
@@ -394,6 +330,7 @@
 								<p class="mb-0 text-white text-sm">{role}</p>
 							</div>
 						</div>
+						<a on:click={SignOut} class="btn btn-outline-white mb-0 btn-sm"> Log out </a>
 					</div>
 				</div>
 			</div>
@@ -524,7 +461,6 @@
 								<li class="list-group-item border-0 ps-0 text-sm">
 									<strong class="text-dark">Email:</strong> &nbsp; {userEmail}
 								</li>
-
 								<li class="list-group-item border-0 ps-0 pb-0">
 									<strong class="text-dark text-sm">Social:</strong> &nbsp;
 									<a class="btn btn-facebook btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
@@ -533,6 +469,7 @@
 									<a class="btn btn-twitter btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
 										<i class="fab fa-twitter fa-lg"></i>
 									</a>
+
 									<a class="btn btn-instagram btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
 										<i class="fab fa-instagram fa-lg"></i>
 									</a>
@@ -870,33 +807,6 @@
 	<script src="assets/js/core/bootstrap.min.js"></script>
 	<script src="assets/js/plugins/perfect-scrollbar.min.js"></script>
 	<script src="assets/js/plugins/smooth-scrollbar.min.js"></script>
-
-	<script>
-		const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
-		const iconSidenav = document.getElementById('iconSidenav');
-		const sidenav = document.getElementById('sidenav-main');
-		const innerBody = document.getElementById('inner-body');
-		let className = 'g-sidenav-pinned';
-
-		iconNavbarSidenav.addEventListener('click', toggleSidenav);
-		iconSidenav.addEventListener('click', toggleSidenav);
-
-		function toggleSidenav() {
-			console.log('Toggling sidenav');
-			if (innerBody.classList.contains(className)) {
-				innerBody.classList.remove(className);
-				setTimeout(() => {
-					sidenav.classList.remove('bg-white');
-				}, 100);
-				sidenav.classList.remove('bg-transparent');
-			} else {
-				innerBody.classList.add(className);
-				sidenav.classList.add('bg-white');
-				sidenav.classList.remove('bg-transparent');
-				iconSidenav.classList.remove('d-none');
-			}
-		}
-	</script>
 
 	<script>
 		var win = navigator.platform.indexOf('Win') > -1;
