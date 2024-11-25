@@ -4,6 +4,8 @@
 	import { auth } from '$lib/firebase';
 	import QRCode from 'qrcode';
 	import { PDFDocument, rgb } from 'pdf-lib'; // Import pdf-lib
+	import { rtdb } from '$lib/firebase';
+	import { ref, set } from 'firebase/database';
 
 	let courseName = '';
 	let studentName = ''; // Add studentName
@@ -11,6 +13,9 @@
 	let dateIssued = '';
 	let user = null;
 	let qrCodeData = '';
+	let certificateStatus = ''; // This will store the status message
+	let certificateStatusMessage = ''; // This will hold the actual status text
+	let showStatus = false; // A flag to control the visibility of the status
 
 	// Handle Firebase Authentication State
 	auth.onAuthStateChanged((firebaseUser) => {
@@ -108,7 +113,7 @@
 		}
 
 		courseName = sanitizeInput(courseName);
-		studentName = sanitizeInput(studentName); // Capture studentName
+		studentName = sanitizeInput(studentName);
 		studentAddress = sanitizeInput(studentAddress);
 		dateIssued = sanitizeInput(dateIssued);
 
@@ -128,7 +133,12 @@
 		}
 
 		try {
-			// Generate the signature
+			// Set the certificate status to pending
+			certificateStatus = 'pending';
+			certificateStatusMessage = 'Certificate issuance in progress...';
+			showStatus = true;
+			await saveCertificateStatusToDB(studentAddress, certificateStatus);
+
 			const signature = await signCertificate(
 				studentAddress,
 				courseName,
@@ -137,31 +147,50 @@
 				dateIssued
 			);
 
-			// Send the transaction to issue the certificate with the signature
 			const tx = await contract.issueCertificate(
 				studentAddress,
 				courseName,
 				studentName,
 				user.email,
 				dateIssued,
-				signature, // Pass the generated signature
+				signature,
 				{ gasLimit: 1000000 }
 			);
 
 			await tx.wait();
+
+			// Once transaction is confirmed, update the status to issued
+			certificateStatus = 'completed';
+			certificateStatusMessage = 'Certificate issued successfully!';
+			await saveCertificateStatusToDB(studentAddress, certificateStatus);
+
+			// Hide status after 5 seconds
+			setTimeout(() => {
+				showStatus = false;
+			}, 5000);
+
 			alert('Certificate issued successfully');
 
-			// Generate and download PDF with QR code
 			await generateCertificatePDF(studentAddress, courseName, studentName, user.email, dateIssued);
 
 			courseName = '';
-			studentName = ''; // Reset studentName
+			studentName = '';
 			studentAddress = '';
 			dateIssued = '';
 		} catch (err) {
 			console.error('Error issuing certificate:', err);
 			alert('Failed to issue certificate');
+			certificateStatus = 'failed'; // In case of failure, mark as failed
+			certificateStatusMessage = 'Failed to issue certificate.';
+			showStatus = true;
+			await saveCertificateStatusToDB(studentAddress, certificateStatus);
 		}
+	}
+
+	async function saveCertificateStatusToDB(studentAddress, status) {
+		const statusRef = ref(rtdb, `certificates/${studentAddress}/status`);
+		await set(statusRef, status);
+		console.log(`Certificate status for ${studentAddress} saved: ${status}`);
 	}
 </script>
 
@@ -175,6 +204,10 @@
 	<input type="text" bind:value={studentAddress} placeholder="Student Address (Ethereum Address)" />
 	<input type="text" bind:value={dateIssued} placeholder="Date Issued (YYYY-MM-DD)" />
 	<button on:click={issueCertificate}>Issue Certificate</button>
+	{#if showStatus}
+		<p>{certificateStatusMessage}</p>
+		<!-- Show the certificate status -->
+	{/if}
 
 	{#if qrCodeData}
 		<h3>Certificate QR Code</h3>

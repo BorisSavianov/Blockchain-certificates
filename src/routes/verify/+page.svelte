@@ -2,6 +2,8 @@
 	import { contract, provider, signer } from '$lib/eth';
 	import { ethers } from 'ethers';
 	import { onMount } from 'svelte';
+	import { rtdb } from '$lib/firebase';
+	import { ref, onValue } from 'firebase/database';
 
 	let userAddress = '';
 	let allCertificates = [];
@@ -9,6 +11,8 @@
 	let verificationResults = [];
 	let isLoading = false;
 	let errorMessage = '';
+	let certificateStatusMessage = '';
+	let showStatus = false; // Control the visibility of the status
 
 	const isContractAvailable = contract !== null;
 
@@ -18,6 +22,33 @@
 
 	function isValidAddress(address) {
 		return ethers.utils.isAddress(address);
+	}
+
+	function fetchCertificateStatusRealtime(studentAddress) {
+		if (!studentAddress) return;
+
+		const statusRef = ref(rtdb, `certificates/${studentAddress}/status`);
+		onValue(statusRef, (snapshot) => {
+			if (snapshot.exists()) {
+				const status = snapshot.val();
+				if (status === 'pending') {
+					certificateStatusMessage = 'Certificate issuance in progress...';
+					showStatus = true;
+				} else if (status === 'completed') {
+					certificateStatusMessage = 'Certificate issued successfully!';
+					showStatus = true;
+
+					// Hide the message after 5 seconds
+					setTimeout(() => {
+						showStatus = false;
+					}, 5000);
+				} else {
+					showStatus = false; // Hide status if it's neither pending nor completed
+				}
+			} else {
+				showStatus = false; // Hide if no certificate is found
+			}
+		});
 	}
 
 	async function fetchAllCertificates(address) {
@@ -106,6 +137,9 @@
 		verificationResults = [];
 
 		try {
+			// Fetch the certificate status in real-time
+			await fetchCertificateStatusRealtime(verifyAddress);
+
 			const results = await contract.getCertificatesByAddress(verifyAddress);
 			if (results.length === 0) {
 				verificationResults.push('No certificates found for this address.');
@@ -177,4 +211,8 @@
 			<li>{result}</li>
 		{/each}
 	</ul>
+{/if}
+{#if showStatus}
+	<p>{certificateStatusMessage}</p>
+	<!-- Show the certificate status -->
 {/if}
