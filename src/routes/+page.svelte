@@ -19,10 +19,6 @@
 	// Cleanup the subscription on component destroy
 	onDestroy(unsubscribe);
 
-	function navigateToProfile() {
-		goto('/profile');
-	}
-
 	onMount(() => {
 		const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
 		const iconSidenav = document.getElementById('iconSidenav');
@@ -308,6 +304,7 @@
 						</div>
 					</nav>
 					<!-- End Navbar -->
+
 					<div class="container-fluid py-4">
 						<div class="row">
 							<div class="col-lg-6 col-12">
@@ -327,38 +324,7 @@
 															></i>
 														</div>
 														<h5 class="text-white font-weight-bolder mb-0 mt-3">1600</h5>
-														<span class="text-white text-sm">Users Active</span>
-													</div>
-													<div class="col-4">
-														<div class="dropdown text-end mb-6">
-															<a
-																href=""
-																class="cursor-pointer"
-																id="dropdownUsers1"
-																data-bs-toggle="dropdown"
-																aria-expanded="false"
-															>
-																<i class="fa fa-ellipsis-h text-white"></i>
-															</a>
-															<ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownUsers1">
-																<li>
-																	<a class="dropdown-item border-radius-md" href="">Action</a>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Another action</a
-																	>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Something else here</a
-																	>
-																</li>
-															</ul>
-														</div>
-														<p class="text-white text-sm text-end font-weight-bolder mt-auto mb-0">
-															+55%
-														</p>
+														<span class="text-white text-sm">Издадени сертификата</span>
 													</div>
 												</div>
 											</div>
@@ -379,38 +345,7 @@
 															></i>
 														</div>
 														<h5 class="text-white font-weight-bolder mb-0 mt-3">357</h5>
-														<span class="text-white text-sm">Click Events</span>
-													</div>
-													<div class="col-4">
-														<div class="dropstart text-end mb-6">
-															<a
-																href=""
-																class="cursor-pointer"
-																id="dropdownUsers2"
-																data-bs-toggle="dropdown"
-																aria-expanded="false"
-															>
-																<i class="fa fa-ellipsis-h text-white"></i>
-															</a>
-															<ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownUsers2">
-																<li>
-																	<a class="dropdown-item border-radius-md" href="">Action</a>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Another action</a
-																	>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Something else here</a
-																	>
-																</li>
-															</ul>
-														</div>
-														<p class="text-white text-sm text-end font-weight-bolder mt-auto mb-0">
-															+124%
-														</p>
+														<span class="text-white text-sm">Различни адреса</span>
 													</div>
 												</div>
 											</div>
@@ -433,38 +368,7 @@
 															></i>
 														</div>
 														<h5 class="text-white font-weight-bolder mb-0 mt-3">2300</h5>
-														<span class="text-white text-sm">Purchases</span>
-													</div>
-													<div class="col-4">
-														<div class="dropdown text-end mb-6">
-															<a
-																href=""
-																class="cursor-pointer"
-																id="dropdownUsers3"
-																data-bs-toggle="dropdown"
-																aria-expanded="false"
-															>
-																<i class="fa fa-ellipsis-h text-white"></i>
-															</a>
-															<ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownUsers3">
-																<li>
-																	<a class="dropdown-item border-radius-md" href="">Action</a>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Another action</a
-																	>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Something else here</a
-																	>
-																</li>
-															</ul>
-														</div>
-														<p class="text-white text-sm text-end font-weight-bolder mt-auto mb-0">
-															+15%
-														</p>
+														<span class="text-white text-sm">Среден успех</span>
 													</div>
 												</div>
 											</div>
@@ -485,38 +389,7 @@
 															></i>
 														</div>
 														<h5 class="text-white font-weight-bolder mb-0 mt-3">940</h5>
-														<span class="text-white text-sm">Likes</span>
-													</div>
-													<div class="col-4">
-														<div class="dropstart text-end mb-6">
-															<a
-																href=""
-																class="cursor-pointer"
-																id="dropdownUsers4"
-																data-bs-toggle="dropdown"
-																aria-expanded="false"
-															>
-																<i class="fa fa-ellipsis-h text-white"></i>
-															</a>
-															<ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownUsers4">
-																<li>
-																	<a class="dropdown-item border-radius-md" href="">Action</a>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Another action</a
-																	>
-																</li>
-																<li>
-																	<a class="dropdown-item border-radius-md" href=""
-																		>Something else here</a
-																	>
-																</li>
-															</ul>
-														</div>
-														<p class="text-white text-sm text-end font-weight-bolder mt-auto mb-0">
-															+90%
-														</p>
+														<span class="text-white text-sm">нещо допълнително</span>
 													</div>
 												</div>
 											</div>
@@ -524,6 +397,7 @@
 									</div>
 								</div>
 							</div>
+
 							<div class="col-lg-6 col-12 mt-4 mt-lg-0">
 								<div class="card shadow h-100">
 									<div class="card-header pb-0 p-3">
@@ -610,6 +484,66 @@
 								</div>
 							</div>
 						</div>
+						<div class="row mt-4">
+							<div class="col-lg-7 mb-lg-0 mb-4">
+								<div class="card">
+									<div class="card-body p-3">
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="d-flex flex-column h-100">
+													<p class="mb-1 pt-2 text-bold"></p>
+													<h5 class="font-weight-bolder">Добре дошли</h5>
+													<p class="mb-5">
+														Тук можете лесно и бързо да издавате автентични сертификати
+													</p>
+												</div>
+											</div>
+											<div class="col-lg-5 ms-auto text-center mt-5 mt-lg-0">
+												<div class="bg-primary border-radius-lg h-100">
+													<img
+														src="assets/img/shapes/waves-white.svg"
+														class="position-absolute h-100 w-50 top-0 d-lg-block d-none"
+														alt="waves"
+													/>
+													<div
+														class="position-relative d-flex align-items-center justify-content-center h-100"
+													>
+														<img
+															class="w-100 position-relative z-index-2 pt-4"
+															src="assets/img/illustrations/rocket-white.png"
+															alt="rocket"
+														/>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-5">
+								<div class="card h-100 p-3">
+									<div
+										class="overflow-hidden position-relative border-radius-lg bg-cover h-100"
+										style="background-image: url('assets/img/ivancik.jpg');"
+									>
+										<span class="mask bg-gradient-dark"></span>
+										<div class="card-body position-relative z-index-1 d-flex flex-column h-100 p-3">
+											<h5 class="text-white font-weight-bolder mb-4 pt-2">Бърз старт</h5>
+											<p class="text-white">
+												Започнете веднага като прегледате наръчника за платформата
+											</p>
+											<a
+												class="text-white text-sm font-weight-bold mb-0 icon-move-right mt-auto"
+												href=""
+											>
+												Виж
+												<i class="fas fa-arrow-right text-sm ms-1" aria-hidden="true"></i>
+											</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 						<div class="row my-4">
 							<div class="col-lg-8 col-md-6 mb-md-0 mb-4">
 								<div class="card">
@@ -652,6 +586,7 @@
 											</div>
 										</div>
 									</div>
+
 									<div class="card-body px-0 pb-2">
 										<div class="table-responsive">
 											<table class="table align-items-center mb-0">
@@ -1155,75 +1090,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="row mt-4">
-							<div class="col-lg-7 mb-lg-0 mb-4">
-								<div class="card">
-									<div class="card-body p-3">
-										<div class="row">
-											<div class="col-lg-6">
-												<div class="d-flex flex-column h-100">
-													<p class="mb-1 pt-2 text-bold">Built by developers</p>
-													<h5 class="font-weight-bolder">Soft UI Dashboard</h5>
-													<p class="mb-5">
-														From colors, cards, typography to complex elements, you will find the
-														full documentation.
-													</p>
-													<a
-														class="text-body text-sm font-weight-bold mb-0 icon-move-right mt-auto"
-														href=""
-													>
-														Read More
-														<i class="fas fa-arrow-right text-sm ms-1" aria-hidden="true"></i>
-													</a>
-												</div>
-											</div>
-											<div class="col-lg-5 ms-auto text-center mt-5 mt-lg-0">
-												<div class="bg-primary border-radius-lg h-100">
-													<img
-														src="assets/img/shapes/waves-white.svg"
-														class="position-absolute h-100 w-50 top-0 d-lg-block d-none"
-														alt="waves"
-													/>
-													<div
-														class="position-relative d-flex align-items-center justify-content-center h-100"
-													>
-														<img
-															class="w-100 position-relative z-index-2 pt-4"
-															src="assets/img/illustrations/rocket-white.png"
-															alt="rocket"
-														/>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-lg-5">
-								<div class="card h-100 p-3">
-									<div
-										class="overflow-hidden position-relative border-radius-lg bg-cover h-100"
-										style="background-image: url('assets/img/ivancik.jpg');"
-									>
-										<span class="mask bg-gradient-dark"></span>
-										<div class="card-body position-relative z-index-1 d-flex flex-column h-100 p-3">
-											<h5 class="text-white font-weight-bolder mb-4 pt-2">Work with the rockets</h5>
-											<p class="text-white">
-												Wealth creation is an evolutionarily recent positive-sum game. It is all
-												about who take the opportunity first.
-											</p>
-											<a
-												class="text-white text-sm font-weight-bold mb-0 icon-move-right mt-auto"
-												href=""
-											>
-												Read More
-												<i class="fas fa-arrow-right text-sm ms-1" aria-hidden="true"></i>
-											</a>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+
 						<div class="row mt-4">
 							<div class="col-lg-5 mb-lg-0 mb-4">
 								<div class="card z-index-2">

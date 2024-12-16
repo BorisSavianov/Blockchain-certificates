@@ -10,6 +10,7 @@ let signer;
 if (isBrowser) {
 	if (window.ethereum) {
 		provider = new ethers.providers.Web3Provider(window.ethereum);
+		await provider.send('eth_requestAccounts', []); // Request accounts from MetaMask
 		signer = provider.getSigner();
 	} else {
 		console.error('Ethereum provider not found. Please install MetaMask or another Web3 provider.');
@@ -17,7 +18,7 @@ if (isBrowser) {
 }
 
 // Deployed contract address and ABI
-const contractAddress = '0x2a2de86dbb6cf8ea5241dda97df9ad4f864910f4'; // Replace with your contract address
+const contractAddress = '0x418A9Feb95928A7B9A68db37A020055e128392Ab'; // Replace with your contract address
 const abi = [
 	{
 		inputs: [

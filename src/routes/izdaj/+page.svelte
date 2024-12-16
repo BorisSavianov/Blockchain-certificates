@@ -87,7 +87,7 @@
 		></script>
 	</head>
 
-	<body class="g-sidenav-show bg-gray-100">
+	<body id="inner-body" class="g-sidenav-show bg-gray-100">
 		<aside
 			class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3"
 			id="sidenav-main"
@@ -280,13 +280,26 @@
 					<nav aria-label="breadcrumb">
 						<ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
 							<li class="breadcrumb-item text-sm">
-								<a class="opacity-5 text-dark" href="javascript:;">Pages</a>
+								<a class="opacity-5 text-dark" href="">Pages</a>
 							</li>
-							<li class="breadcrumb-item text-sm text-dark active" aria-current="page">Issue</li>
+							<li class="breadcrumb-item text-sm text-dark active" aria-current="page">Home</li>
 						</ol>
-						<h6 class="font-weight-bolder mb-0">Issue</h6>
+						<h6 class="font-weight-bolder mb-0">Home</h6>
 					</nav>
-					<div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar"></div>
+					<div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+						<div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>
+						<ul class="navbar-nav justify-content-end">
+							<li class="nav-item d-xl-none ps-3 d-flex align-items-center">
+								<a href="" class="nav-link text-body p-0" id="iconNavbarSidenav">
+									<div class="sidenav-toggler-inner">
+										<i class="sidenav-toggler-line"></i>
+										<i class="sidenav-toggler-line"></i>
+										<i class="sidenav-toggler-line"></i>
+									</div>
+								</a>
+							</li>
+						</ul>
+					</div>
 				</div>
 			</nav>
 			<!-- End Navbar -->
@@ -372,11 +385,11 @@
 									<div class="card-header pb-0 p-3">
 										<div class="row">
 											<div class="col-6 d-flex align-items-center">
-												<h6 class="mb-0">Payment Method</h6>
+												<h6 class="mb-0">Нов сертификат</h6>
 											</div>
 											<div class="col-6 text-end">
-												<a class="btn bg-gradient-dark mb-0" href="javascript:;"
-													><i class="fas fa-plus"></i>&nbsp;&nbsp;Add New Card</a
+												<button class="btn bg-gradient-dark mb-0" href="javascript:;"
+													><i class="fas fa-plus"></i>&nbsp;&nbsp;Издай</button
 												>
 											</div>
 										</div>
@@ -384,43 +397,29 @@
 									<div class="card-body p-3">
 										<div class="row">
 											<div class="col-md-6 mb-md-0 mb-4">
-												<div
+												<input
 													class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
-												>
-													<img
-														class="w-10 me-3 mb-0"
-														src="../assets/img/logos/mastercard.png"
-														alt="logo"
-													/>
-													<h6 class="mb-0">
-														****&nbsp;&nbsp;&nbsp;****&nbsp;&nbsp;&nbsp;****&nbsp;&nbsp;&nbsp;7852
-													</h6>
-													<i
-														class="fas fa-pencil-alt ms-auto text-dark cursor-pointer"
-														data-bs-toggle="tooltip"
-														data-bs-placement="top"
-														title="Edit Card"
-													></i>
-												</div>
+												/>
 											</div>
 											<div class="col-md-6">
-												<div
-													class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
-												>
-													<img
-														class="w-10 me-3 mb-0"
-														src="../assets/img/logos/visa.png"
-														alt="logo"
+												<div class="col-md-6 mb-md-0 mb-4">
+													<input
+														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
 													/>
-													<h6 class="mb-0">
-														****&nbsp;&nbsp;&nbsp;****&nbsp;&nbsp;&nbsp;****&nbsp;&nbsp;&nbsp;5248
-													</h6>
-													<i
-														class="fas fa-pencil-alt ms-auto text-dark cursor-pointer"
-														data-bs-toggle="tooltip"
-														data-bs-placement="top"
-														title="Edit Card"
-													></i>
+												</div>
+											</div>
+											<div class="col-md-6 mt-3">
+												<div class="col-md-6 mb-md-0 mb-4">
+													<input
+														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
+													/>
+												</div>
+											</div>
+											<div class="col-md-6 mt-3">
+												<div class="col-md-6 mb-md-0 mb-4">
+													<input
+														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
+													/>
 												</div>
 											</div>
 										</div>
