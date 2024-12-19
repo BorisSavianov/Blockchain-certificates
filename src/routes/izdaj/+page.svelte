@@ -4,14 +4,14 @@
 	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	let auth;
+	let authSubscribe;
 
 	// Subscribe to authStore to track authentication state
 	const unsubscribe = authStore.subscribe((value) => {
-		auth = value;
+		authSubscribe = value;
 
 		// Redirect to login if loading is done and user is not logged in
-		if (!auth.loading && !auth.isLoggedIn) {
+		if (!authSubscribe.loading && !authSubscribe.isLoggedIn) {
 			goto('/login');
 		}
 	});
@@ -51,6 +51,199 @@
 			iconSidenav?.removeEventListener('click', toggleSidenav);
 		};
 	});
+
+	import { contract } from '$lib/eth';
+	import { ethers } from 'ethers';
+	import QRCode from 'qrcode';
+	import { PDFDocument, rgb } from 'pdf-lib'; // Import pdf-lib
+	import { rtdb } from '$lib/firebase';
+	import { ref, set } from 'firebase/database';
+	import { auth } from '$lib/firebase';
+
+	let courseName = '';
+	let studentName = ''; // Add studentName
+	let studentAddress = '';
+	let dateIssued = '';
+	let user = null;
+	let qrCodeData = '';
+	let certificateStatus = ''; // This will store the status message
+	let certificateStatusMessage = ''; // This will hold the actual status text
+	let showStatus = false; // A flag to control the visibility of the status
+
+	auth.onAuthStateChanged((firebaseUser) => {
+		user = firebaseUser;
+	});
+
+	const isContractAvailable = contract !== null;
+
+	function sanitizeInput(input) {
+		return input.trim();
+	}
+
+	function isValidAddress(address) {
+		return ethers.utils.isAddress(address);
+	}
+
+	function isValidDate(date) {
+		const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+		return datePattern.test(date);
+	}
+
+	// Function to sign certificate details
+	async function signCertificate(studentAddress, courseName, studentName, email, dateIssued) {
+		if (!user) {
+			throw new Error('Signer not available');
+		}
+
+		// Hash the certificate details
+		const certificateHash = ethers.utils.solidityKeccak256(
+			['address', 'string', 'string', 'string', 'string'],
+			[studentAddress, courseName, studentName, email, dateIssued]
+		);
+
+		// Sign the hash
+		const signature = await contract.signer.signMessage(ethers.utils.arrayify(certificateHash));
+		return signature;
+	}
+
+	async function generateCertificatePDF(
+		studentAddress,
+		courseName,
+		studentName,
+		email,
+		dateIssued
+	) {
+		const pdfDoc = await PDFDocument.create();
+		const page = pdfDoc.addPage([600, 400]);
+
+		const qrCodeUrl = `http://localhost:5173/verify?address=${studentAddress}`;
+		const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUrl);
+
+		// Add title
+		page.drawText('Certificate of Completion', {
+			x: page.getWidth() / 2 - 100,
+			y: page.getHeight() - 50,
+			size: 30,
+			color: rgb(0, 0, 0),
+			align: 'center'
+		});
+
+		// Add certificate details
+		page.drawText(`Course Name: ${courseName}`, { x: 50, y: page.getHeight() - 100, size: 20 });
+		page.drawText(`Student Name: ${studentName}`, { x: 50, y: page.getHeight() - 130, size: 20 });
+		page.drawText(`Email: ${email}`, { x: 50, y: page.getHeight() - 160, size: 20 });
+		page.drawText(`Date Issued: ${dateIssued}`, { x: 50, y: page.getHeight() - 190, size: 20 });
+
+		// Add QR code image
+		const qrCodeImage = await pdfDoc.embedPng(qrCodeDataUrl);
+		page.drawImage(qrCodeImage, {
+			x: page.getWidth() - 150,
+			y: page.getHeight() - 200,
+			width: 100,
+			height: 100
+		});
+
+		// Save PDF
+		const pdfBytes = await pdfDoc.save();
+		const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'certificate.pdf';
+		a.click();
+	}
+
+	async function issueCertificate() {
+		if (!isContractAvailable) {
+			alert('Contract is not available. Ensure you are on the client side.');
+			return;
+		}
+
+		if (!user) {
+			alert('You must be logged in to issue a certificate.');
+			return;
+		}
+
+		courseName = sanitizeInput(courseName);
+		studentName = sanitizeInput(studentName);
+		studentAddress = sanitizeInput(studentAddress);
+		dateIssued = sanitizeInput(dateIssued);
+
+		if (!courseName || !studentName || !studentAddress || !dateIssued) {
+			alert('Please fill in all fields');
+			return;
+		}
+
+		if (!isValidDate(dateIssued)) {
+			alert('Invalid date format. Use YYYY-MM-DD.');
+			return;
+		}
+
+		if (!isValidAddress(studentAddress)) {
+			alert('Invalid student address');
+			return;
+		}
+
+		try {
+			// Set the certificate status to pending
+			certificateStatus = 'pending';
+			certificateStatusMessage = 'Certificate issuance in progress...';
+			showStatus = true;
+			await saveCertificateStatusToDB(studentAddress, certificateStatus);
+
+			const signature = await signCertificate(
+				studentAddress,
+				courseName,
+				studentName,
+				user.email,
+				dateIssued
+			);
+
+			const tx = await contract.issueCertificate(
+				studentAddress,
+				courseName,
+				studentName,
+				user.email,
+				dateIssued,
+				signature,
+				{ gasLimit: 1000000 }
+			);
+
+			await tx.wait();
+
+			// Once transaction is confirmed, update the status to issued
+			certificateStatus = 'completed';
+			certificateStatusMessage = 'Certificate issued successfully!';
+			await saveCertificateStatusToDB(studentAddress, certificateStatus);
+
+			// Hide status after 5 seconds
+			setTimeout(() => {
+				showStatus = false;
+			}, 5000);
+
+			alert('Certificate issued successfully');
+
+			await generateCertificatePDF(studentAddress, courseName, studentName, user.email, dateIssued);
+
+			courseName = '';
+			studentName = '';
+			studentAddress = '';
+			dateIssued = '';
+		} catch (err) {
+			console.error('Error issuing certificate:', err);
+			alert('Failed to issue certificate');
+			certificateStatus = 'failed'; // In case of failure, mark as failed
+			certificateStatusMessage = 'Failed to issue certificate.';
+			showStatus = true;
+			await saveCertificateStatusToDB(studentAddress, certificateStatus);
+		}
+	}
+
+	async function saveCertificateStatusToDB(studentAddress, status) {
+		const statusRef = ref(rtdb, `certificates/${studentAddress}/status`);
+		await set(statusRef, status);
+		console.log(`Certificate status for ${studentAddress} saved: ${status}`);
+	}
 </script>
 
 <html lang="en">
@@ -185,7 +378,7 @@
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href="/">
+						<a class="nav-link" href="/verificiraj">
 							<div
 								class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center"
 							>
@@ -388,7 +581,7 @@
 												<h6 class="mb-0">Нов сертификат</h6>
 											</div>
 											<div class="col-6 text-end">
-												<button class="btn bg-gradient-dark mb-0" href="javascript:;"
+												<button on:click={issueCertificate} class="btn bg-gradient-dark mb-0"
 													><i class="fas fa-plus"></i>&nbsp;&nbsp;Издай</button
 												>
 											</div>
@@ -399,12 +592,18 @@
 											<div class="col-md-6 mb-md-0 mb-4">
 												<input
 													class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
+													type="text"
+													bind:value={courseName}
+													placeholder="Course Name"
 												/>
 											</div>
 											<div class="col-md-6">
 												<div class="col-md-6 mb-md-0 mb-4">
 													<input
 														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
+														type="text"
+														bind:value={studentName}
+														placeholder="Student Name"
 													/>
 												</div>
 											</div>
@@ -412,6 +611,9 @@
 												<div class="col-md-6 mb-md-0 mb-4">
 													<input
 														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
+														type="text"
+														bind:value={studentAddress}
+														placeholder="Student Address (Ethereum Address)"
 													/>
 												</div>
 											</div>
@@ -419,9 +621,22 @@
 												<div class="col-md-6 mb-md-0 mb-4">
 													<input
 														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
+														type="text"
+														bind:value={dateIssued}
+														placeholder="Date Issued (YYYY-MM-DD)"
 													/>
 												</div>
 											</div>
+
+											{#if showStatus}
+												<p>{certificateStatusMessage}</p>
+												<!-- Show the certificate status -->
+											{/if}
+
+											{#if qrCodeData}
+												<h3>Certificate QR Code</h3>
+												<img src={qrCodeData} alt="Certificate QR Code" />
+											{/if}
 										</div>
 									</div>
 								</div>
