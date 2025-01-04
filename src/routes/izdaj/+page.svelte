@@ -72,6 +72,9 @@
 
 	auth.onAuthStateChanged((firebaseUser) => {
 		user = firebaseUser;
+		if (user) {
+			loadBlanks(); // Load blanks when the user logs in
+		}
 	});
 
 	const isContractAvailable = contract !== null;
@@ -243,6 +246,73 @@
 		const statusRef = ref(rtdb, `certificates/${studentAddress}/status`);
 		await set(statusRef, status);
 		console.log(`Certificate status for ${studentAddress} saved: ${status}`);
+	}
+
+	import { get } from 'firebase/database';
+
+	let blanks = [];
+
+	// Save Blank Function
+	async function saveBlank() {
+		if (!courseName || !studentName || !studentAddress || !dateIssued) {
+			alert('Моля, попълнете всички полета.');
+			return;
+		}
+
+		if (blanks.length >= 3) {
+			alert('Можете да запазите максимум 3 чернови.');
+			return;
+		}
+
+		const newBlank = { courseName, studentName, studentAddress, dateIssued };
+
+		blanks = [...blanks, newBlank];
+
+		// Save the blank to Firebase under the user's ID
+		const blanksRef = ref(rtdb, `blanks/${user.uid}`);
+		await set(blanksRef, blanks);
+
+		// Clear form fields
+		courseName = '';
+		studentName = '';
+		studentAddress = '';
+		dateIssued = '';
+	}
+
+	// Load Blanks Function
+	async function loadBlanks() {
+		const blanksRef = ref(rtdb, `blanks/${user.uid}`);
+		const snapshot = await get(blanksRef);
+		if (snapshot.exists()) {
+			blanks = snapshot.val();
+		} else {
+			blanks = [];
+		}
+	}
+
+	// Continue Blank Function
+	function loadBlank(index) {
+		const blank = blanks[index];
+		courseName = blank.courseName;
+		studentName = blank.studentName;
+		studentAddress = blank.studentAddress;
+		dateIssued = blank.dateIssued;
+
+		// Optionally remove the blank after loading it
+		blanks = blanks.filter((_, i) => i !== index);
+
+		// Update the database with the new blanks state
+		const blanksRef = ref(rtdb, `blanks/${user.uid}`);
+		set(blanksRef, blanks);
+	}
+
+	// Delete Blank Function
+	async function deleteBlank(index) {
+		blanks = blanks.filter((_, i) => i !== index);
+
+		// Update the database after deletion
+		const blanksRef = ref(rtdb, `blanks/${user.uid}`);
+		set(blanksRef, blanks);
 	}
 </script>
 
@@ -500,79 +570,6 @@
 				<div class="row">
 					<div class="col-lg-8">
 						<div class="row">
-							<div class="col-xl-6 mb-xl-0 mb-4">
-								<div class="card bg-transparent shadow-xl">
-									<div
-										class="overflow-hidden position-relative border-radius-xl"
-										style="background-image: url('../assets/img/curved-images/curved14.jpg');"
-									>
-										<span class="mask bg-gradient-dark"></span>
-										<div class="card-body position-relative z-index-1 p-3">
-											<i class="fas fa-wifi text-white p-2"></i>
-											<h5 class="text-white mt-4 mb-5 pb-2">
-												4562&nbsp;&nbsp;&nbsp;1122&nbsp;&nbsp;&nbsp;4594&nbsp;&nbsp;&nbsp;7852
-											</h5>
-											<div class="d-flex">
-												<div class="d-flex">
-													<div class="me-4">
-														<p class="text-white text-sm opacity-8 mb-0">Card Holder</p>
-														<h6 class="text-white mb-0">Jack Peterson</h6>
-													</div>
-													<div>
-														<p class="text-white text-sm opacity-8 mb-0">Expires</p>
-														<h6 class="text-white mb-0">11/22</h6>
-													</div>
-												</div>
-												<div class="ms-auto w-20 d-flex align-items-end justify-content-end">
-													<img
-														class="w-60 mt-2"
-														src="../assets/img/logos/mastercard.png"
-														alt="logo"
-													/>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-xl-6">
-								<div class="row">
-									<div class="col-md-6">
-										<div class="card">
-											<div class="card-header mx-4 p-3 text-center">
-												<div
-													class="icon icon-shape icon-lg bg-primary shadow text-center border-radius-lg"
-												>
-													<i class="fas fa-landmark opacity-10"></i>
-												</div>
-											</div>
-											<div class="card-body pt-0 p-3 text-center">
-												<h6 class="text-center mb-0">Salary</h6>
-												<span class="text-xs">Belong Interactive</span>
-												<hr class="horizontal dark my-3" />
-												<h5 class="mb-0">+$2000</h5>
-											</div>
-										</div>
-									</div>
-									<div class="col-md-6 mt-md-0 mt-4">
-										<div class="card">
-											<div class="card-header mx-4 p-3 text-center">
-												<div
-													class="icon icon-shape icon-lg bg-primary shadow text-center border-radius-lg"
-												>
-													<i class="fab fa-paypal opacity-10"></i>
-												</div>
-											</div>
-											<div class="card-body pt-0 p-3 text-center">
-												<h6 class="text-center mb-0">Paypal</h6>
-												<span class="text-xs">Freelance Payment</span>
-												<hr class="horizontal dark my-3" />
-												<h5 class="mb-0">$455.00</h5>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
 							<div class="col-md-12 mb-lg-0 mb-4">
 								<div class="card mt-4">
 									<div class="card-header pb-0 p-3">
@@ -581,9 +578,12 @@
 												<h6 class="mb-0">Нов сертификат</h6>
 											</div>
 											<div class="col-6 text-end">
-												<button on:click={issueCertificate} class="btn bg-gradient-dark mb-0"
-													><i class="fas fa-plus"></i>&nbsp;&nbsp;Издай</button
-												>
+												<button on:click={saveBlank} class="btn bg-gradient-dark mb-0">
+													<i class="fas fa-save"></i>&nbsp;&nbsp;Запази
+												</button>
+												<button on:click={issueCertificate} class="btn bg-gradient-dark mb-0">
+													<i class="fas fa-plus"></i>&nbsp;&nbsp;Издай
+												</button>
 											</div>
 										</div>
 									</div>
@@ -627,17 +627,37 @@
 													/>
 												</div>
 											</div>
-
-											{#if showStatus}
-												<p>{certificateStatusMessage}</p>
-												<!-- Show the certificate status -->
-											{/if}
-
-											{#if qrCodeData}
-												<h3>Certificate QR Code</h3>
-												<img src={qrCodeData} alt="Certificate QR Code" />
-											{/if}
 										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-12 mt-4">
+								<div class="card">
+									<div class="card-header">
+										<h6 class="mb-0">Запазени чернови</h6>
+									</div>
+									<div class="card-body">
+										{#each blanks as blank, index}
+											<div class="row mb-3">
+												<div class="col-md-8">
+													<p>
+														<strong>{index + 1}. {blank.courseName}</strong> - {blank.studentName}
+													</p>
+												</div>
+												<div class="col-md-4 text-end">
+													<button class="btn btn-sm btn-primary" on:click={() => loadBlank(index)}>
+														Продължи
+													</button>
+													<button class="btn btn-sm btn-danger" on:click={() => deleteBlank(index)}>
+														Изтрий
+													</button>
+												</div>
+											</div>
+										{/each}
+										{#if blanks.length === 0}
+											<p>Няма запазени чернови.</p>
+										{/if}
 									</div>
 								</div>
 							</div>
