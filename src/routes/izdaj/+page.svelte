@@ -19,7 +19,7 @@
 	// Cleanup the subscription on component destroy
 	onDestroy(unsubscribe);
 
-	onMount(() => {
+	onMount(async () => {
 		const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
 		const iconSidenav = document.getElementById('iconSidenav');
 		const sidenav = document.getElementById('sidenav-main');
@@ -65,7 +65,6 @@
 	let studentAddress = '';
 	let dateIssued = '';
 	let user = null;
-	let qrCodeData = '';
 	let certificateStatus = ''; // This will store the status message
 	let certificateStatusMessage = ''; // This will hold the actual status text
 	let showStatus = false; // A flag to control the visibility of the status
@@ -74,6 +73,7 @@
 		user = firebaseUser;
 		if (user) {
 			loadBlanks(); // Load blanks when the user logs in
+			loadCertificates();
 		}
 	});
 
@@ -227,7 +227,8 @@
 			alert('Certificate issued successfully');
 
 			await generateCertificatePDF(studentAddress, courseName, studentName, user.email, dateIssued);
-
+			// Call this function inside issueCertificate after issuing the certificate
+			await saveIssuedCertificate(courseName, studentName, dateIssued);
 			courseName = '';
 			studentName = '';
 			studentAddress = '';
@@ -313,6 +314,48 @@
 		// Update the database after deletion
 		const blanksRef = ref(rtdb, `blanks/${user.uid}`);
 		set(blanksRef, blanks);
+	}
+
+	import {
+		getFirestore,
+		collection,
+		doc,
+		setDoc,
+		query,
+		orderBy,
+		limit,
+		getDocs
+	} from 'firebase/firestore';
+
+	const db = getFirestore();
+
+	async function saveIssuedCertificate(courseName, studentName, dateIssued) {
+		if (!user) return;
+
+		const userRef = doc(collection(db, 'users'), user.uid);
+		const certificatesRef = collection(userRef, 'certificates');
+
+		// Create a document with a unique ID
+		const newCertificateRef = doc(certificatesRef);
+
+		// Set the data
+		await setDoc(newCertificateRef, { courseName, studentName, dateIssued });
+
+		// Retrieve the six most recent certificates
+		const q = query(certificatesRef, orderBy('dateIssued', 'desc'), limit(6));
+		const snapshot = await getDocs(q);
+		certificates = snapshot.docs.map((doc) => doc.data());
+	}
+
+	let certificates = [];
+
+	async function loadCertificates() {
+		console.log('loading certificates');
+		const userRef = doc(collection(db, 'users'), user.uid);
+		const certificatesRef = collection(userRef, 'certificates');
+		const q = query(certificatesRef, orderBy('dateIssued', 'desc'), limit(6));
+		const snapshot = await getDocs(q);
+		certificates = snapshot.docs.map((doc) => doc.data());
 	}
 </script>
 
@@ -631,33 +674,40 @@
 									</div>
 								</div>
 							</div>
-
 							<div class="col-md-12 mt-4">
 								<div class="card">
 									<div class="card-header">
 										<h6 class="mb-0">Запазени чернови</h6>
 									</div>
-									<div class="card-body">
-										{#each blanks as blank, index}
-											<div class="row mb-3">
-												<div class="col-md-8">
-													<p>
-														<strong>{index + 1}. {blank.courseName}</strong> - {blank.studentName}
-													</p>
-												</div>
-												<div class="col-md-4 text-end">
-													<button class="btn btn-sm btn-primary" on:click={() => loadBlank(index)}>
-														Продължи
-													</button>
-													<button class="btn btn-sm btn-danger" on:click={() => deleteBlank(index)}>
-														Изтрий
-													</button>
-												</div>
-											</div>
-										{/each}
-										{#if blanks.length === 0}
-											<p>Няма запазени чернови.</p>
-										{/if}
+									<div class="card-body pt-4 p-3">
+										<ul class="list-group">
+											{#each blanks as blank, index}
+												<li
+													class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg"
+												>
+													<div class="d-flex flex-column">
+														<h4 class="mb-3">{blank.courseName}</h4>
+														<strong>{blank.studentName}</strong>
+													</div>
+													<div class="ms-auto text-end">
+														<a
+															class="btn btn-link text-danger text-gradient px-3 mb-0"
+															on:click={() => deleteBlank(index)}
+															><i class="far fa-trash-alt me-2"></i>Delete</a
+														>
+														<a
+															class="btn btn-link text-dark px-3 mb-0"
+															on:click={() => loadBlank(index)}
+															><i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"
+															></i>Edit</a
+														>
+													</div>
+												</li>
+											{/each}
+											{#if blanks.length === 0}
+												<p>Няма запазени чернови.</p>
+											{/if}
+										</ul>
 									</div>
 								</div>
 							</div>
@@ -666,195 +716,32 @@
 					<div class="col-lg-4">
 						<div class="card h-100">
 							<div class="card-header pb-0 p-3">
-								<div class="row">
-									<div class="col-6 d-flex align-items-center">
-										<h6 class="mb-0">Invoices</h6>
-									</div>
-									<div class="col-6 text-end">
-										<button class="btn btn-outline-primary btn-sm mb-0">View All</button>
-									</div>
-								</div>
+								<h6 class="mb-0">Последно издадени сертификати</h6>
 							</div>
 							<div class="card-body p-3 pb-0">
-								<ul class="list-group">
+								{#each certificates as certificate, index}
 									<li
 										class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg"
 									>
 										<div class="d-flex flex-column">
-											<h6 class="mb-1 text-dark font-weight-bold text-sm">March, 01, 2020</h6>
-											<span class="text-xs">#MS-415646</span>
+											<h6 class="mb-1 text-dark font-weight-bold text-sm">
+												{certificate.courseName}
+											</h6>
+											<span class="text-xs">{certificate.studentName}</span>
 										</div>
 										<div class="d-flex align-items-center text-sm">
-											$180
-											<button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4"
-												><i class="fas fa-file-pdf text-lg me-1"></i> PDF</button
-											>
+											{certificate.dateIssued}
 										</div>
 									</li>
-									<li
-										class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg"
-									>
-										<div class="d-flex flex-column">
-											<h6 class="text-dark mb-1 font-weight-bold text-sm">February, 10, 2021</h6>
-											<span class="text-xs">#RV-126749</span>
-										</div>
-										<div class="d-flex align-items-center text-sm">
-											$250
-											<button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4"
-												><i class="fas fa-file-pdf text-lg me-1"></i> PDF</button
-											>
-										</div>
-									</li>
-									<li
-										class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg"
-									>
-										<div class="d-flex flex-column">
-											<h6 class="text-dark mb-1 font-weight-bold text-sm">April, 05, 2020</h6>
-											<span class="text-xs">#FB-212562</span>
-										</div>
-										<div class="d-flex align-items-center text-sm">
-											$560
-											<button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4"
-												><i class="fas fa-file-pdf text-lg me-1"></i> PDF</button
-											>
-										</div>
-									</li>
-									<li
-										class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg"
-									>
-										<div class="d-flex flex-column">
-											<h6 class="text-dark mb-1 font-weight-bold text-sm">June, 25, 2019</h6>
-											<span class="text-xs">#QW-103578</span>
-										</div>
-										<div class="d-flex align-items-center text-sm">
-											$120
-											<button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4"
-												><i class="fas fa-file-pdf text-lg me-1"></i> PDF</button
-											>
-										</div>
-									</li>
-									<li
-										class="list-group-item border-0 d-flex justify-content-between ps-0 border-radius-lg"
-									>
-										<div class="d-flex flex-column">
-											<h6 class="text-dark mb-1 font-weight-bold text-sm">March, 01, 2019</h6>
-											<span class="text-xs">#AR-803481</span>
-										</div>
-										<div class="d-flex align-items-center text-sm">
-											$300
-											<button class="btn btn-link text-dark text-sm mb-0 px-0 ms-4"
-												><i class="fas fa-file-pdf text-lg me-1"></i> PDF</button
-											>
-										</div>
-									</li>
-								</ul>
+								{/each}
+								{#if certificates.length === 0}
+									<p>Няма издадени сертификати.</p>
+								{/if}
 							</div>
 						</div>
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-7 mt-4">
-						<div class="card">
-							<div class="card-header pb-0 px-3">
-								<h6 class="mb-0">Billing Information</h6>
-							</div>
-							<div class="card-body pt-4 p-3">
-								<ul class="list-group">
-									<li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg">
-										<div class="d-flex flex-column">
-											<h6 class="mb-3 text-sm">Oliver Liam</h6>
-											<span class="mb-2 text-xs"
-												>Company Name: <span class="text-dark font-weight-bold ms-sm-2"
-													>Viking Burrito</span
-												></span
-											>
-											<span class="mb-2 text-xs"
-												>Email Address: <span class="text-dark ms-sm-2 font-weight-bold"
-													>oliver@burrito.com</span
-												></span
-											>
-											<span class="text-xs"
-												>VAT Number: <span class="text-dark ms-sm-2 font-weight-bold"
-													>FRB1235476</span
-												></span
-											>
-										</div>
-										<div class="ms-auto text-end">
-											<a
-												class="btn btn-link text-danger text-gradient px-3 mb-0"
-												href="javascript:;"><i class="far fa-trash-alt me-2"></i>Delete</a
-											>
-											<a class="btn btn-link text-dark px-3 mb-0" href="javascript:;"
-												><i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"></i>Edit</a
-											>
-										</div>
-									</li>
-									<li
-										class="list-group-item border-0 d-flex p-4 mb-2 mt-3 bg-gray-100 border-radius-lg"
-									>
-										<div class="d-flex flex-column">
-											<h6 class="mb-3 text-sm">Lucas Harper</h6>
-											<span class="mb-2 text-xs"
-												>Company Name: <span class="text-dark font-weight-bold ms-sm-2"
-													>Stone Tech Zone</span
-												></span
-											>
-											<span class="mb-2 text-xs"
-												>Email Address: <span class="text-dark ms-sm-2 font-weight-bold"
-													>lucas@stone-tech.com</span
-												></span
-											>
-											<span class="text-xs"
-												>VAT Number: <span class="text-dark ms-sm-2 font-weight-bold"
-													>FRB1235476</span
-												></span
-											>
-										</div>
-										<div class="ms-auto text-end">
-											<a
-												class="btn btn-link text-danger text-gradient px-3 mb-0"
-												href="javascript:;"><i class="far fa-trash-alt me-2"></i>Delete</a
-											>
-											<a class="btn btn-link text-dark px-3 mb-0" href="javascript:;"
-												><i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"></i>Edit</a
-											>
-										</div>
-									</li>
-									<li
-										class="list-group-item border-0 d-flex p-4 mb-2 mt-3 bg-gray-100 border-radius-lg"
-									>
-										<div class="d-flex flex-column">
-											<h6 class="mb-3 text-sm">Ethan James</h6>
-											<span class="mb-2 text-xs"
-												>Company Name: <span class="text-dark font-weight-bold ms-sm-2"
-													>Fiber Notion</span
-												></span
-											>
-											<span class="mb-2 text-xs"
-												>Email Address: <span class="text-dark ms-sm-2 font-weight-bold"
-													>ethan@fiber.com</span
-												></span
-											>
-											<span class="text-xs"
-												>VAT Number: <span class="text-dark ms-sm-2 font-weight-bold"
-													>FRB1235476</span
-												></span
-											>
-										</div>
-										<div class="ms-auto text-end">
-											<a
-												class="btn btn-link text-danger text-gradient px-3 mb-0"
-												href="javascript:;"><i class="far fa-trash-alt me-2"></i>Delete</a
-											>
-											<a class="btn btn-link text-dark px-3 mb-0" href="javascript:;"
-												><i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"></i>Edit</a
-											>
-										</div>
-									</li>
-								</ul>
-							</div>
-						</div>
-					</div>
 					<div class="col-md-5 mt-4">
 						<div class="card h-100 mb-4">
 							<div class="card-header pb-0 px-3">
