@@ -110,6 +110,8 @@
 			certificate.signature
 		);
 
+		console.log(studentAddress);
+		console.log(recoveredAddress);
 		// Check if the recovered address matches the studentAddress
 		return recoveredAddress.toLowerCase() === studentAddress.toLowerCase();
 	}

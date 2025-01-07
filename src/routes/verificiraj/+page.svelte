@@ -124,21 +124,26 @@
 			return;
 		}
 
+		isLoading = true;
+		errorMessage = '';
+		verificationResults = [];
+
 		try {
 			const results = await contract.getCertificatesByAddress(address);
 			if (results.length === 0) {
-				allCertificates = ['No certificates found for this address.'];
+				verificationResults.push('No certificates found for this address.');
 			} else {
 				allCertificates = results.map((cert) => ({
+					studentName: cert.studentName,
 					courseName: cert.courseName,
-					dateIssued: cert.dateIssued // Only store course name and date issued
+					email: cert.email,
+					dateIssued: cert.dateIssued,
+					signature: cert.signature
 				}));
 			}
 		} catch (err) {
 			console.error('Error fetching certificates:', err);
 			errorMessage = 'Failed to fetch certificates.';
-		} finally {
-			isLoading = false;
 		}
 	}
 
@@ -161,6 +166,9 @@
 			ethers.utils.arrayify(certificateHash),
 			certificate.signature
 		);
+
+		console.log(studentAddress);
+		console.log(recoveredAddress);
 
 		// Check if the recovered address matches the studentAddress
 		return recoveredAddress.toLowerCase() === studentAddress.toLowerCase();
@@ -216,11 +224,19 @@
 		try {
 			userAddress = await signer.getAddress();
 			await fetchAllCertificates(userAddress);
+
+			// Optionally, you can add verification status to each certificate
+			for (let cert of allCertificates) {
+				console.log(cert);
+				const isValid = await verifySignature(cert, userAddress);
+				cert.status = isValid ? true : false;
+			}
 		} catch (err) {
 			console.error('Error fetching user address:', err);
 			errorMessage = 'Failed to retrieve Ethereum address.';
 		} finally {
 			isLoading = false;
+			console.log(allCertificates);
 		}
 
 		// Check if there's an address in the query parameters
@@ -552,7 +568,7 @@
 																<td>
 																	<div class="d-flex px-2 py-1">
 																		<div class="d-flex flex-column justify-content-center">
-																			<h6 class="mb-0 text-sm">{certificate.courseName}</h6>
+																			<h6 class="mb-0 text-sm">{certificate.studentName}</h6>
 																		</div>
 																	</div>
 																</td>
@@ -562,9 +578,12 @@
 																	</p>
 																</td>
 																<td class="align-middle text-center text-sm">
-																	<span class="badge badge-sm bg-gradient-success"
-																		>{certificate.signature}</span
-																	>
+																	{#if certificate.status}
+																		<span class="badge badge-sm bg-gradient-success">валиден</span>
+																	{:else}
+																		<span class="badge badge-sm bg-gradient-success">
+																			Невалиден</span
+																		>{/if}
 																</td>
 																<td class="align-middle text-center">
 																	<span class="text-secondary text-xs font-weight-bold"

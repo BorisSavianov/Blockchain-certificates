@@ -18,7 +18,7 @@ if (isBrowser) {
 }
 
 // Deployed contract address and ABI
-const contractAddress = '0xf92a3988b8484ceee39f32aa3768f1d1ad0bcd54'; // Replace with your contract address
+const contractAddress = '0x3828334809e3edbe6542a113c0e8f22661865926'; // Replace with your contract address
 const abi = [
 	{
 		inputs: [
@@ -27,7 +27,7 @@ const abi = [
 			{ internalType: 'string', name: 'studentName', type: 'string' },
 			{ internalType: 'string', name: 'email', type: 'string' },
 			{ internalType: 'string', name: 'dateIssued', type: 'string' },
-			{ internalType: 'bytes', name: 'signature', type: 'bytes' } // Include signature in contract
+			{ internalType: 'bytes', name: 'signature', type: 'bytes' }
 		],
 		name: 'issueCertificate',
 		outputs: [],
@@ -44,7 +44,7 @@ const abi = [
 					{ internalType: 'string', name: 'studentName', type: 'string' },
 					{ internalType: 'string', name: 'email', type: 'string' },
 					{ internalType: 'string', name: 'dateIssued', type: 'string' },
-					{ internalType: 'bytes', name: 'signature', type: 'bytes' } // Signature part of the certificate structure
+					{ internalType: 'bytes', name: 'signature', type: 'bytes' }
 				],
 				internalType: 'struct Certificate.CertificateInfo[]',
 				name: '',
@@ -57,12 +57,12 @@ const abi = [
 	{
 		anonymous: false,
 		inputs: [
-			{ indexed: false, internalType: 'address', name: 'student', type: 'address' },
+			{ indexed: true, internalType: 'address', name: 'student', type: 'address' },
 			{ indexed: false, internalType: 'string', name: 'courseName', type: 'string' },
 			{ indexed: false, internalType: 'string', name: 'studentName', type: 'string' },
 			{ indexed: false, internalType: 'string', name: 'email', type: 'string' },
 			{ indexed: false, internalType: 'string', name: 'dateIssued', type: 'string' },
-			{ indexed: false, internalType: 'bytes', name: 'signature', type: 'bytes' } // Log signature in event
+			{ indexed: false, internalType: 'bytes', name: 'signature', type: 'bytes' }
 		],
 		name: 'CertificateIssued',
 		type: 'event'
