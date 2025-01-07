@@ -81,7 +81,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 	<link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png" />
 	<link rel="icon" type="image/png" href="assets/img/favicon.png" />
-	<title>Profile</title>
+	<title>Профил</title>
 	<!--     Fonts and icons     -->
 	<link
 		href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800"
@@ -114,8 +114,7 @@
 				id="iconSidenav"
 			></i>
 			<a class="navbar-brand m-0" href="/">
-				<img src="assets/img/logo-ct-dark.png" class="navbar-brand-img h-100" alt="main_logo" />
-				<span class="ms-1 font-weight-bold">Soft UI Dashboard 3</span>
+				<img src="assets/img/logo3.png" class="navbar-brand-img h-100" alt="main_logo" />
 			</a>
 		</div>
 		<hr class="horizontal dark mt-0" />
@@ -332,10 +331,16 @@
 							</div>
 							<div>
 								<h5 class="mb-1 text-white font-weight-bolder">{displayName}</h5>
-								<p class="mb-0 text-white text-sm">{role}</p>
+								<p class="mb-0 text-white text-sm">
+									{role === 'student'
+										? 'Студент'
+										: role === 'organization'
+											? 'Организация'
+											: 'Неизвестно'}
+								</p>
 							</div>
 						</div>
-						<a on:click={SignOut} class="btn btn-outline-white mb-0 btn-sm"> Log out </a>
+						<a on:click={SignOut} class="btn btn-outline-white mb-0 btn-sm"> Излез </a>
 					</div>
 				</div>
 			</div>

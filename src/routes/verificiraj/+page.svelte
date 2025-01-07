@@ -239,7 +239,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 		<link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png" />
 		<link rel="icon" type="image/png" href="../assets/img/favicon.png" />
-		<title> Soft UI Dashboard 3 by Creative Tim </title>
+		<title>Верифицирай</title>
 		<!--     Fonts and icons     -->
 		<link
 			href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800"
@@ -258,13 +258,6 @@
 		<script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
 		<!-- CSS Files -->
 		<link id="pagestyle" href="../assets/css/soft-ui-dashboard.css?v=1.1.0" rel="stylesheet" />
-		<!-- Nepcha Analytics (nepcha.com) -->
-		<!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
-		<script
-			defer
-			data-site="YOUR_DOMAIN_HERE"
-			src="https://api.nepcha.com/js/nepcha-analytics.js"
-		></script>
 	</head>
 
 	<body id="inner-body" class="g-sidenav-show bg-gray-100">
@@ -279,8 +272,7 @@
 					id="iconSidenav"
 				></i>
 				<a class="navbar-brand m-0" href="/">
-					<img src="assets/img/logo-ct-dark.png" class="navbar-brand-img h-100" alt="main_logo" />
-					<span class="ms-1 font-weight-bold">Soft UI Dashboard 3</span>
+					<img src="assets/img/logo3.png" class="navbar-brand-img h-100" alt="main_logo" />
 				</a>
 			</div>
 			<hr class="horizontal dark mt-0" />
@@ -485,7 +477,7 @@
 				</div>
 			</nav>
 			<!-- End Navbar -->
-			<div class="container-fluid py-4">
+			<div class="container-fluid py-4 mv">
 				<div class="col-md-12 mb-lg-0 mb-4">
 					<div class="card mt-4">
 						<div class="card-header pb-0 p-3">
@@ -516,297 +508,95 @@
 						</div>
 					</div>
 				</div>
-				<h1>Your Certificates</h1>
 
-				<div>
-					{#if isLoading}
-						<p>Loading...</p>
-					{:else if errorMessage}
-						<p>{errorMessage}</p>
-					{:else if allCertificates.length > 0}
-						<ul>
-							{#each allCertificates as certificate}
-								<li>
-									Course: {certificate.courseName}, Date: {certificate.dateIssued}
-									<!-- Only showing course name and date -->
-								</li>
-							{/each}
-						</ul>
-					{:else}
-						<p>No certificates found for your Ethereum address.</p>
-					{/if}
-				</div>
-				{#if !isLoading && verificationResults.length > 0}
-					<ul>
-						{#each verificationResults as result}
-							<li>{result}</li>
-						{/each}
-					</ul>
-				{/if}
-				{#if showStatus}
-					<p>{certificateStatusMessage}</p>
-					<!-- Show the certificate status -->
-				{/if}
 				<div class="row">
 					<div class="col-12">
 						<div class="card mb-4">
 							<div class="card-header pb-0">
-								<h6>История</h6>
+								<h6>Вашите сертификати</h6>
 							</div>
-							<div class="card-body px-0 pt-0 pb-2">
-								<div class="table-responsive p-0">
-									<table class="table align-items-center mb-0">
-										<thead>
-											<tr>
-												<th
-													class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-													>Author</th
-												>
-												<th
-													class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
-													>Function</th
-												>
-												<th
-													class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-													>Status</th
-												>
-												<th
-													class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
-													>Employed</th
-												>
-												<th class="text-secondary opacity-7"></th>
-											</tr>
-										</thead>
-										<tbody>
-											<tr>
-												<td>
-													<div class="d-flex px-2 py-1">
-														<div>
-															<img
-																src="../assets/img/team-2.jpg"
-																class="avatar avatar-sm me-3"
-																alt="user1"
-															/>
-														</div>
-														<div class="d-flex flex-column justify-content-center">
-															<h6 class="mb-0 text-sm">John Michael</h6>
-															<p class="text-xs text-secondary mb-0">john@creative-tim.com</p>
-														</div>
-													</div>
-												</td>
-												<td>
-													<p class="text-xs font-weight-bold mb-0">Manager</p>
-													<p class="text-xs text-secondary mb-0">Organization</p>
-												</td>
-												<td class="align-middle text-center text-sm">
-													<span class="badge badge-sm bg-gradient-success">Online</span>
-												</td>
-												<td class="align-middle text-center">
-													<span class="text-secondary text-xs font-weight-bold">23/04/18</span>
-												</td>
-												<td class="align-middle">
-													<a
-														href="javascript:;"
-														class="text-secondary font-weight-bold text-xs"
-														data-toggle="tooltip"
-														data-original-title="Edit user"
-													>
-														Edit
-													</a>
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<div class="d-flex px-2 py-1">
-														<div>
-															<img
-																src="../assets/img/team-3.jpg"
-																class="avatar avatar-sm me-3"
-																alt="user2"
-															/>
-														</div>
-														<div class="d-flex flex-column justify-content-center">
-															<h6 class="mb-0 text-sm">Alexa Liras</h6>
-															<p class="text-xs text-secondary mb-0">alexa@creative-tim.com</p>
-														</div>
-													</div>
-												</td>
-												<td>
-													<p class="text-xs font-weight-bold mb-0">Programator</p>
-													<p class="text-xs text-secondary mb-0">Developer</p>
-												</td>
-												<td class="align-middle text-center text-sm">
-													<span class="badge badge-sm bg-gradient-secondary">Offline</span>
-												</td>
-												<td class="align-middle text-center">
-													<span class="text-secondary text-xs font-weight-bold">11/01/19</span>
-												</td>
-												<td class="align-middle">
-													<a
-														href="javascript:;"
-														class="text-secondary font-weight-bold text-xs"
-														data-toggle="tooltip"
-														data-original-title="Edit user"
-													>
-														Edit
-													</a>
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<div class="d-flex px-2 py-1">
-														<div>
-															<img
-																src="../assets/img/team-4.jpg"
-																class="avatar avatar-sm me-3"
-																alt="user3"
-															/>
-														</div>
-														<div class="d-flex flex-column justify-content-center">
-															<h6 class="mb-0 text-sm">Laurent Perrier</h6>
-															<p class="text-xs text-secondary mb-0">laurent@creative-tim.com</p>
-														</div>
-													</div>
-												</td>
-												<td>
-													<p class="text-xs font-weight-bold mb-0">Executive</p>
-													<p class="text-xs text-secondary mb-0">Projects</p>
-												</td>
-												<td class="align-middle text-center text-sm">
-													<span class="badge badge-sm bg-gradient-success">Online</span>
-												</td>
-												<td class="align-middle text-center">
-													<span class="text-secondary text-xs font-weight-bold">19/09/17</span>
-												</td>
-												<td class="align-middle">
-													<a
-														href="javascript:;"
-														class="text-secondary font-weight-bold text-xs"
-														data-toggle="tooltip"
-														data-original-title="Edit user"
-													>
-														Edit
-													</a>
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<div class="d-flex px-2 py-1">
-														<div>
-															<img
-																src="../assets/img/team-3.jpg"
-																class="avatar avatar-sm me-3"
-																alt="user4"
-															/>
-														</div>
-														<div class="d-flex flex-column justify-content-center">
-															<h6 class="mb-0 text-sm">Michael Levi</h6>
-															<p class="text-xs text-secondary mb-0">michael@creative-tim.com</p>
-														</div>
-													</div>
-												</td>
-												<td>
-													<p class="text-xs font-weight-bold mb-0">Programator</p>
-													<p class="text-xs text-secondary mb-0">Developer</p>
-												</td>
-												<td class="align-middle text-center text-sm">
-													<span class="badge badge-sm bg-gradient-success">Online</span>
-												</td>
-												<td class="align-middle text-center">
-													<span class="text-secondary text-xs font-weight-bold">24/12/08</span>
-												</td>
-												<td class="align-middle">
-													<a
-														href="javascript:;"
-														class="text-secondary font-weight-bold text-xs"
-														data-toggle="tooltip"
-														data-original-title="Edit user"
-													>
-														Edit
-													</a>
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<div class="d-flex px-2 py-1">
-														<div>
-															<img
-																src="../assets/img/team-2.jpg"
-																class="avatar avatar-sm me-3"
-																alt="user5"
-															/>
-														</div>
-														<div class="d-flex flex-column justify-content-center">
-															<h6 class="mb-0 text-sm">Richard Gran</h6>
-															<p class="text-xs text-secondary mb-0">richard@creative-tim.com</p>
-														</div>
-													</div>
-												</td>
-												<td>
-													<p class="text-xs font-weight-bold mb-0">Manager</p>
-													<p class="text-xs text-secondary mb-0">Executive</p>
-												</td>
-												<td class="align-middle text-center text-sm">
-													<span class="badge badge-sm bg-gradient-secondary">Offline</span>
-												</td>
-												<td class="align-middle text-center">
-													<span class="text-secondary text-xs font-weight-bold">04/10/21</span>
-												</td>
-												<td class="align-middle">
-													<a
-														href="javascript:;"
-														class="text-secondary font-weight-bold text-xs"
-														data-toggle="tooltip"
-														data-original-title="Edit user"
-													>
-														Edit
-													</a>
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<div class="d-flex px-2 py-1">
-														<div>
-															<img
-																src="../assets/img/team-4.jpg"
-																class="avatar avatar-sm me-3"
-																alt="user6"
-															/>
-														</div>
-														<div class="d-flex flex-column justify-content-center">
-															<h6 class="mb-0 text-sm">Miriam Eric</h6>
-															<p class="text-xs text-secondary mb-0">miriam@creative-tim.com</p>
-														</div>
-													</div>
-												</td>
-												<td>
-													<p class="text-xs font-weight-bold mb-0">Programtor</p>
-													<p class="text-xs text-secondary mb-0">Developer</p>
-												</td>
-												<td class="align-middle text-center text-sm">
-													<span class="badge badge-sm bg-gradient-secondary">Offline</span>
-												</td>
-												<td class="align-middle text-center">
-													<span class="text-secondary text-xs font-weight-bold">14/09/20</span>
-												</td>
-												<td class="align-middle">
-													<a
-														href="javascript:;"
-														class="text-secondary font-weight-bold text-xs"
-														data-toggle="tooltip"
-														data-original-title="Edit user"
-													>
-														Edit
-													</a>
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
+
+							<div>
+								{#if isLoading}
+									<p>Loading...</p>
+								{:else if errorMessage}
+									<p>{errorMessage}</p>
+								{:else if allCertificates.length > 0}
+									<ul>
+										{#each allCertificates as certificate}
+											<div class="card-body px-0 pt-0 pb-2">
+												<div class="table-responsive p-0">
+													<table class="table align-items-center mb-0">
+														<thead>
+															<tr>
+																<th
+																	class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+																	>Студент</th
+																>
+																<th
+																	class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
+																	>Курс</th
+																>
+																<th
+																	class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+																	>Статус</th
+																>
+																<th
+																	class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+																	>Дата</th
+																>
+															</tr>
+														</thead>
+														<tbody>
+															<tr>
+																<td>
+																	<div class="d-flex px-2 py-1">
+																		<div class="d-flex flex-column justify-content-center">
+																			<h6 class="mb-0 text-sm">{certificate.courseName}</h6>
+																		</div>
+																	</div>
+																</td>
+																<td>
+																	<p class="text-xs font-weight-bold mb-0">
+																		{certificate.courseName}
+																	</p>
+																</td>
+																<td class="align-middle text-center text-sm">
+																	<span class="badge badge-sm bg-gradient-success"
+																		>{certificate.signature}</span
+																	>
+																</td>
+																<td class="align-middle text-center">
+																	<span class="text-secondary text-xs font-weight-bold"
+																		>{certificate.dateIssued}</span
+																	>
+																</td>
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>
+										{/each}
+									</ul>
+								{:else}
+									<p>No certificates found for your Ethereum address.</p>
+								{/if}
 							</div>
+							{#if !isLoading && verificationResults.length > 0}
+								<ul>
+									{#each verificationResults as result}
+										<li>{result}</li>
+									{/each}
+								</ul>
+							{/if}
+							{#if showStatus}
+								<p>{certificateStatusMessage}</p>
+								<!-- Show the certificate status -->
+							{/if}
 						</div>
 					</div>
 				</div>
+
 				<div class="row">
 					<div class="col-12">
 						<div class="card mb-4">

@@ -18,7 +18,7 @@ if (isBrowser) {
 }
 
 // Deployed contract address and ABI
-const contractAddress = '0xaac6c34e643777245ae41b9ee8d0b0da259d3ca4'; // Replace with your contract address
+const contractAddress = '0xf92a3988b8484ceee39f32aa3768f1d1ad0bcd54'; // Replace with your contract address
 const abi = [
 	{
 		inputs: [

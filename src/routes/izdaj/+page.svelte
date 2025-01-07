@@ -365,7 +365,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 		<link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png" />
 		<link rel="icon" type="image/png" href="../assets/img/favicon.png" />
-		<title> Soft UI Dashboard 3 by Creative Tim </title>
+		<title>Издай</title>
 		<!--     Fonts and icons     -->
 		<link
 			href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800"
@@ -384,13 +384,6 @@
 		<script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
 		<!-- CSS Files -->
 		<link id="pagestyle" href="../assets/css/soft-ui-dashboard.css?v=1.1.0" rel="stylesheet" />
-		<!-- Nepcha Analytics (nepcha.com) -->
-		<!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
-		<script
-			defer
-			data-site="YOUR_DOMAIN_HERE"
-			src="https://api.nepcha.com/js/nepcha-analytics.js"
-		></script>
 	</head>
 
 	<body id="inner-body" class="g-sidenav-show bg-gray-100">
@@ -405,8 +398,7 @@
 					id="iconSidenav"
 				></i>
 				<a class="navbar-brand m-0" href="/">
-					<img src="assets/img/logo-ct-dark.png" class="navbar-brand-img h-100" alt="main_logo" />
-					<span class="ms-1 font-weight-bold">Soft UI Dashboard 3</span>
+					<img src="assets/img/logo3.png" class="navbar-brand-img h-100" alt="main_logo" />
 				</a>
 			</div>
 			<hr class="horizontal dark mt-0" />

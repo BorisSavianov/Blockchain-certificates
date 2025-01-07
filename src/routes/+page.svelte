@@ -63,7 +63,7 @@
 				<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 				<link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png" />
 				<link rel="icon" type="image/png" href="assets/img/favicon.png" />
-				<title>Home</title>
+				<title>Начало</title>
 				<!--     Fonts and icons     -->
 				<link
 					href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800"
@@ -96,12 +96,7 @@
 							id="iconSidenav"
 						></i>
 						<a class="navbar-brand m-0" href="/">
-							<img
-								src="assets/img/logo-ct-dark.png"
-								class="navbar-brand-img h-100"
-								alt="main_logo"
-							/>
-							<span class="ms-1 font-weight-bold">Soft UI Dashboard 3</span>
+							<img src="assets/img/logo3.png" class="navbar-brand-img h-100" alt="main_logo" />
 						</a>
 					</div>
 					<hr class="horizontal dark mt-0" />
