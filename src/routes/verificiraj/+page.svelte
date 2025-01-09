@@ -27,7 +27,6 @@
 		let className = 'g-sidenav-pinned';
 
 		function toggleSidenav() {
-			console.log('Toggling sidenav');
 			if (innerBody.classList.contains(className)) {
 				innerBody.classList.remove(className);
 				setTimeout(() => {
@@ -167,9 +166,6 @@
 			certificate.signature
 		);
 
-		console.log(studentAddress);
-		console.log(recoveredAddress);
-
 		// Check if the recovered address matches the studentAddress
 		return recoveredAddress.toLowerCase() === studentAddress.toLowerCase();
 	}
@@ -227,7 +223,6 @@
 
 			// Optionally, you can add verification status to each certificate
 			for (let cert of allCertificates) {
-				console.log(cert);
 				const isValid = await verifySignature(cert, userAddress);
 				cert.status = isValid ? true : false;
 			}
@@ -236,7 +231,6 @@
 			errorMessage = 'Failed to retrieve Ethereum address.';
 		} finally {
 			isLoading = false;
-			console.log(allCertificates);
 		}
 
 		// Check if there's an address in the query parameters
@@ -527,7 +521,7 @@
 
 				<div class="row">
 					<div class="col-12">
-						<div class="card mb-4">
+						<div class="card mb-4 mt-4">
 							<div class="card-header pb-0">
 								<h6>Вашите сертификати</h6>
 							</div>
@@ -539,7 +533,7 @@
 									<p>{errorMessage}</p>
 								{:else if allCertificates.length > 0}
 									<ul>
-										{#each allCertificates as certificate}
+										<div class="scrollable-container">
 											<div class="card-body px-0 pt-0 pb-2">
 												<div class="table-responsive p-0">
 													<table class="table align-items-center mb-0">
@@ -563,39 +557,50 @@
 																>
 															</tr>
 														</thead>
-														<tbody>
-															<tr>
-																<td>
-																	<div class="d-flex px-2 py-1">
-																		<div class="d-flex flex-column justify-content-center">
-																			<h6 class="mb-0 text-sm">{certificate.studentName}</h6>
+														{#each allCertificates as certificate}
+															<tbody>
+																<tr>
+																	<td>
+																		<div class="d-flex px-2 py-1">
+																			<div class="d-flex flex-column justify-content-center">
+																				<h6 class="mb-0 text-sm">{certificate.studentName}</h6>
+																			</div>
 																		</div>
-																	</div>
-																</td>
-																<td>
-																	<p class="text-xs font-weight-bold mb-0">
-																		{certificate.courseName}
-																	</p>
-																</td>
-																<td class="align-middle text-center text-sm">
-																	{#if certificate.status}
-																		<span class="badge badge-sm bg-gradient-success">валиден</span>
-																	{:else}
-																		<span class="badge badge-sm bg-gradient-success">
-																			Невалиден</span
-																		>{/if}
-																</td>
-																<td class="align-middle text-center">
-																	<span class="text-secondary text-xs font-weight-bold"
-																		>{certificate.dateIssued}</span
-																	>
-																</td>
-															</tr>
-														</tbody>
+																	</td>
+																	<td>
+																		<p class="text-xs font-weight-bold mb-0">
+																			{certificate.courseName}
+																		</p>
+																	</td>
+																	<td class="align-middle text-center text-sm">
+																		{#if certificate.status}
+																			<span class="badge badge-sm bg-gradient-success">валиден</span
+																			>
+																		{:else}
+																			<span class="badge badge-sm bg-gradient-danger"
+																				>Невалиден</span
+																			>
+																		{/if}
+																	</td>
+																	<td class="align-middle text-center">
+																		<span class="text-secondary text-xs font-weight-bold">
+																			{certificate.dateIssued}
+																		</span>
+																	</td>
+																</tr>
+															</tbody>
+														{/each}
 													</table>
 												</div>
 											</div>
-										{/each}
+										</div>
+
+										<style>
+											.scrollable-container {
+												max-height: 350px;
+												overflow-y: auto;
+											}
+										</style>
 									</ul>
 								{:else}
 									<p>No certificates found for your Ethereum address.</p>

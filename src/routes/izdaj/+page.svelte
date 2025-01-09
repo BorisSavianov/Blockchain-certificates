@@ -27,7 +27,6 @@
 		let className = 'g-sidenav-pinned';
 
 		function toggleSidenav() {
-			console.log('Toggling sidenav');
 			if (innerBody.classList.contains(className)) {
 				innerBody.classList.remove(className);
 				setTimeout(() => {
@@ -329,6 +328,8 @@
 
 	const db = getFirestore();
 
+	import { serverTimestamp, deleteDoc } from 'firebase/firestore';
+
 	async function saveIssuedCertificate(courseName, studentName, dateIssued) {
 		if (!user) return;
 
@@ -338,22 +339,38 @@
 		// Create a document with a unique ID
 		const newCertificateRef = doc(certificatesRef);
 
-		// Set the data
-		await setDoc(newCertificateRef, { courseName, studentName, dateIssued });
+		// Set the data, including the current timestamp
+		await setDoc(newCertificateRef, {
+			courseName,
+			studentName,
+			dateIssued,
+			createdAt: serverTimestamp()
+		});
 
-		// Retrieve the six most recent certificates
-		const q = query(certificatesRef, orderBy('dateIssued', 'desc'), limit(6));
+		// Retrieve all certificates ordered by createdAt
+		const q = query(certificatesRef, orderBy('createdAt', 'desc'));
 		const snapshot = await getDocs(q);
-		certificates = snapshot.docs.map((doc) => doc.data());
+
+		// If there are more than six certificates, delete the oldest
+		if (snapshot.size > 6) {
+			const oldestDocs = snapshot.docs.slice(6); // Get all docs after the 6th
+			for (const doc of oldestDocs) {
+				await deleteDoc(doc.ref); // Delete each one
+			}
+		}
+
+		// Update the certificates list to include only the six most recent
+		certificates = snapshot.docs.slice(0, 6).map((doc) => doc.data());
 	}
 
 	let certificates = [];
 
 	async function loadCertificates() {
-		console.log('loading certificates');
 		const userRef = doc(collection(db, 'users'), user.uid);
 		const certificatesRef = collection(userRef, 'certificates');
-		const q = query(certificatesRef, orderBy('dateIssued', 'desc'), limit(6));
+
+		// Query to order by the newly added createdAt field
+		const q = query(certificatesRef, orderBy('createdAt', 'desc'), limit(6));
 		const snapshot = await getDocs(q);
 		certificates = snapshot.docs.map((doc) => doc.data());
 	}
@@ -658,7 +675,7 @@
 														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
 														type="text"
 														bind:value={dateIssued}
-														placeholder="Date Issued (YYYY-MM-DD)"
+														placeholder="Issue Date (YYYY-MM-DD)"
 													/>
 												</div>
 											</div>
@@ -705,30 +722,32 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-lg-4">
+					<div class="col-lg-4 col-md-6">
 						<div class="card h-100">
-							<div class="card-header pb-0 p-3">
-								<h6 class="mb-0">Последно издадени сертификати</h6>
-							</div>
-							<div class="card-body p-3 pb-0">
-								{#each certificates as certificate, index}
-									<li
-										class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg"
-									>
-										<div class="d-flex flex-column">
-											<h6 class="mb-1 text-dark font-weight-bold text-sm">
-												{certificate.courseName}
-											</h6>
-											<span class="text-xs">{certificate.studentName}</span>
-										</div>
-										<div class="d-flex align-items-center text-sm">
-											{certificate.dateIssued}
-										</div>
-									</li>
-								{/each}
-								{#if certificates.length === 0}
-									<p>Няма издадени сертификати.</p>
-								{/if}
+							<div class="card-header pb-0">
+								<h6>Последно издадени сертификати</h6>
+								<div class="card-body p-3">
+									<div class="timeline timeline-one-side">
+										{#each certificates as certificate, index}
+											<div class="timeline-block mb-3">
+												<span class="timeline-step">⚫</span>
+
+												<div class="timeline-content">
+													<h6 class="text-dark text-sm font-weight-bold mb-0">
+														{certificate.courseName}, {certificate.studentName}
+													</h6>
+													<p class="text-secondary font-weight-bold text-xs mt-1 mb-0">
+														{certificate.dateIssued}
+													</p>
+												</div>
+											</div>
+										{/each}
+
+										{#if certificates.length === 0}
+											<p>Няма издадени сертификати.</p>
+										{/if}
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>

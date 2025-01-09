@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
-	import { getAuth, signOut } from 'firebase/auth';
-	import { getFirestore, doc, getDoc } from 'firebase/firestore';
+	import { getAuth, signOut, deleteUser, updateProfile, updateEmail } from 'firebase/auth';
+	import { getFirestore, doc, getDoc, deleteDoc } from 'firebase/firestore';
 	import { auth, db } from '$lib/firebase'; // Adjust according to your file structure
 	import { goto } from '$app/navigation';
 
@@ -67,12 +67,72 @@
 		const auth = getAuth();
 		signOut(auth)
 			.then(() => {
-				alert('Successfuly signed out.');
+				alert('Successfully signed out.');
 				goto('/login');
 			})
 			.catch((error) => {
 				console.log(error);
 			});
+	}
+
+	async function deleteAccount() {
+		const user = auth.currentUser;
+
+		if (user) {
+			try {
+				// Delete the user's Firestore document
+				await deleteDoc(doc(db, 'users', user.uid));
+
+				// Delete the user's authentication account
+				await deleteUser(user);
+
+				alert('Account successfully deleted.');
+				goto('/login');
+			} catch (error) {
+				console.error('Error deleting account:', error);
+				alert('Error deleting account: ' + error.message);
+			}
+		} else {
+			alert('No user is currently signed in.');
+		}
+	}
+
+	let newName = '';
+
+	async function changeName() {
+		const user = auth.currentUser;
+
+		if (user) {
+			try {
+				await updateProfile(user, { displayName: newName });
+				alert('Name successfully updated.');
+				displayName = newName; // Update the local variable
+			} catch (error) {
+				console.error('Error updating name:', error);
+				alert('Error updating name: ' + error.message);
+			}
+		} else {
+			alert('No user is currently signed in.');
+		}
+	}
+
+	let newEmail = '';
+
+	async function changeEmail() {
+		const user = auth.currentUser;
+
+		if (user) {
+			try {
+				await updateEmail(user, newEmail);
+				alert('Email successfully updated.');
+				userEmail = newEmail; // Update the local variable
+			} catch (error) {
+				console.error('Error updating email:', error);
+				alert('Error updating email: ' + error.message);
+			}
+		} else {
+			alert('No user is currently signed in.');
+		}
 	}
 </script>
 
@@ -327,7 +387,7 @@
 					<div class="d-flex justify-content-between align-items-end">
 						<div class="d-flex align-items-center">
 							<div class="avatar avatar-xl position-relative me-3">
-								<img src={userPhoto} alt="profile_image" class="w-100 border-radius-lg shadow-sm" />
+								<img src={userPhoto} alt="profileImg" class="w-100 border-radius-lg shadow-sm" />
 							</div>
 							<div>
 								<h5 class="mb-1 text-white font-weight-bolder">{displayName}</h5>
@@ -357,43 +417,106 @@
 							<ul class="list-group">
 								<li class="list-group-item border-0 px-0">
 									<div class="form-check form-switch ps-0">
-										<input
-											class="form-check-input ms-auto"
-											type="checkbox"
-											id="flexSwitchCheckDefault"
-											checked
-										/>
-										<label
-											class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-											for="flexSwitchCheckDefault">Email me when someone follows me</label
-										>
+										<button class="btn bg-danger text-white mb-0" on:click={deleteAccount}>
+											Изтрий акаунт
+										</button>
 									</div>
 								</li>
 								<li class="list-group-item border-0 px-0">
-									<div class="form-check form-switch ps-0">
-										<input
-											class="form-check-input ms-auto"
-											type="checkbox"
-											id="flexSwitchCheckDefault1"
-										/>
-										<label
-											class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-											for="flexSwitchCheckDefault1">Email me when someone answers on my post</label
+									<div class="d-flex form-check form-switch ps-0">
+										<button
+											class="btn bg-primary text-white mb-0"
+											data-bs-toggle="modal"
+											data-bs-target="#changeName"
 										>
+											Смени Име
+										</button>
+									</div>
+									<!-- Modal -->
+									<div
+										class="modal fade"
+										id="changeName"
+										tabindex="-1"
+										aria-labelledby="changeNameLabel"
+										aria-hidden="true"
+									>
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<div class="modal-header">
+													<h1 class="modal-title fs-5" id="changeNameLabel">Смяна на име</h1>
+													<button
+														type="button"
+														class="btn-close"
+														data-bs-dismiss="modal"
+														aria-label="Close"
+													></button>
+												</div>
+												<div class="modal-body">
+													<input
+														style=" border: 1px solid black; padding: 12px 15px; margin: 0 auto; width: 100%;"
+														type="text"
+														bind:value={newName}
+													/>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+														>Затвори</button
+													>
+													<button type="button" class="btn btn-primary" on:click={changeName}
+														>Смени</button
+													>
+												</div>
+											</div>
+										</div>
 									</div>
 								</li>
 								<li class="list-group-item border-0 px-0">
-									<div class="form-check form-switch ps-0">
-										<input
-											class="form-check-input ms-auto"
-											type="checkbox"
-											id="flexSwitchCheckDefault2"
-											checked
-										/>
-										<label
-											class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-											for="flexSwitchCheckDefault2">Email me when someone mentions me</label
+									<div class="d-flex form-check form-switch ps-0">
+										<!-- ADD EMAIL VERIFICATION -->
+										<!-- <button
+											class="btn bg-primary text-white mb-0"
+											data-bs-toggle="modal"
+											data-bs-target="#changeEmail"
 										>
+											Change Email
+										</button> -->
+									</div>
+									<!-- Modal -->
+									<div
+										class="modal fade"
+										id="changeEmail"
+										tabindex="-1"
+										aria-labelledby="changeEmailLabel"
+										aria-hidden="true"
+									>
+										<div class="modal-dialog">
+											<div class="modal-content">
+												<div class="modal-header">
+													<h1 class="modal-title fs-5" id="changeEmailLabel">Modal title</h1>
+													<button
+														type="button"
+														class="btn-close"
+														data-bs-dismiss="modal"
+														aria-label="Close"
+													></button>
+												</div>
+												<div class="modal-body">
+													<input
+														style="background-color: #eee; border: none; padding: 12px 15px; margin-left: 20px;"
+														type="email"
+														bind:value={newEmail}
+													/>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+														>Close</button
+													>
+													<button type="button" class="btn btn-primary" on:click={changeEmail}
+														>Save changes</button
+													>
+												</div>
+											</div>
+										</div>
 									</div>
 								</li>
 							</ul>
@@ -409,33 +532,6 @@
 										<label
 											class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
 											for="flexSwitchCheckDefault3">New launches and projects</label
-										>
-									</div>
-								</li>
-								<li class="list-group-item border-0 px-0">
-									<div class="form-check form-switch ps-0">
-										<input
-											class="form-check-input ms-auto"
-											type="checkbox"
-											id="flexSwitchCheckDefault4"
-											checked
-										/>
-										<label
-											class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-											for="flexSwitchCheckDefault4">Monthly product updates</label
-										>
-									</div>
-								</li>
-								<li class="list-group-item border-0 px-0 pb-0">
-									<div class="form-check form-switch ps-0">
-										<input
-											class="form-check-input ms-auto"
-											type="checkbox"
-											id="flexSwitchCheckDefault5"
-										/>
-										<label
-											class="form-check-label text-body ms-3 text-truncate w-80 mb-0"
-											for="flexSwitchCheckDefault5">Subscribe to newsletter</label
 										>
 									</div>
 								</li>
@@ -465,24 +561,11 @@
 						<div class="card-body p-3">
 							<ul class="list-group">
 								<li class="list-group-item border-0 ps-0 pt-0 text-sm">
-									<strong class="text-dark">Full Name:</strong> &nbsp; {displayName}
+									<strong class="text-dark">Display Name:</strong> &nbsp; {displayName}
 								</li>
 
 								<li class="list-group-item border-0 ps-0 text-sm">
 									<strong class="text-dark">Email:</strong> &nbsp; {userEmail}
-								</li>
-								<li class="list-group-item border-0 ps-0 pb-0">
-									<strong class="text-dark text-sm">Social:</strong> &nbsp;
-									<a class="btn btn-facebook btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
-										<i class="fab fa-facebook fa-lg"></i>
-									</a>
-									<a class="btn btn-twitter btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
-										<i class="fab fa-twitter fa-lg"></i>
-									</a>
-
-									<a class="btn btn-instagram btn-simple mb-0 ps-1 pe-2 py-0" href="javascript:;">
-										<i class="fab fa-instagram fa-lg"></i>
-									</a>
 								</li>
 							</ul>
 						</div>
@@ -557,7 +640,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-12 mt-4">
+				<!-- <div class="col-12 mt-4">
 					<div class="card mb-4">
 						<div class="card-header pb-0 p-3">
 							<h6 class="mb-1">Projects</h6>
@@ -773,61 +856,62 @@
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>
-			<footer class="footer pt-3">
-				<div class="container-fluid">
-					<div class="row align-items-center justify-content-lg-between">
-						<div class="col-lg-6">
-							<ul class="nav nav-footer justify-content-center justify-content-lg-end">
-								<li class="nav-item">
-									<a
-										href="https://www.creative-tim.com/presentation"
-										class="nav-link text-muted"
-										target="_blank">About Us</a
-									>
-								</li>
-								<li class="nav-item">
-									<a
-										href="https://www.creative-tim.com/blog"
-										class="nav-link text-muted"
-										target="_blank">Blog</a
-									>
-								</li>
-								<li class="nav-item">
-									<a
-										href="https://www.creative-tim.com/license"
-										class="nav-link pe-0 text-muted"
-										target="_blank">License</a
-									>
-								</li>
-							</ul>
+				</div> 
+			</div>-->
+				<footer class="footer pt-3">
+					<div class="container-fluid">
+						<div class="row align-items-center justify-content-lg-between">
+							<div class="col-lg-6">
+								<ul class="nav nav-footer justify-content-center justify-content-lg-end">
+									<li class="nav-item">
+										<a
+											href="https://www.creative-tim.com/presentation"
+											class="nav-link text-muted"
+											target="_blank">About Us</a
+										>
+									</li>
+									<li class="nav-item">
+										<a
+											href="https://www.creative-tim.com/blog"
+											class="nav-link text-muted"
+											target="_blank">Blog</a
+										>
+									</li>
+									<li class="nav-item">
+										<a
+											href="https://www.creative-tim.com/license"
+											class="nav-link pe-0 text-muted"
+											target="_blank">License</a
+										>
+									</li>
+								</ul>
+							</div>
 						</div>
 					</div>
-				</div>
-			</footer>
+				</footer>
+			</div>
 		</div>
-	</div>
 
-	<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-	<script src="assets/js/soft-ui-dashboard.min.js"></script>
+		<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
+		<script src="assets/js/soft-ui-dashboard.min.js"></script>
 
-	<!--   Core JS Files   -->
-	<script src="assets/js/core/popper.min.js"></script>
-	<script src="assets/js/core/bootstrap.min.js"></script>
-	<script src="assets/js/plugins/perfect-scrollbar.min.js"></script>
-	<script src="assets/js/plugins/smooth-scrollbar.min.js"></script>
+		<!--   Core JS Files   -->
+		<script src="assets/js/core/popper.min.js"></script>
+		<script src="assets/js/core/bootstrap.min.js"></script>
+		<script src="assets/js/plugins/perfect-scrollbar.min.js"></script>
+		<script src="assets/js/plugins/smooth-scrollbar.min.js"></script>
 
-	<script>
-		var win = navigator.platform.indexOf('Win') > -1;
-		if (win && document.querySelector('#sidenav-scrollbar')) {
-			var options = {
-				damping: '0.5'
-			};
-			Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-		}
-	</script>
+		<script>
+			var win = navigator.platform.indexOf('Win') > -1;
+			if (win && document.querySelector('#sidenav-scrollbar')) {
+				var options = {
+					damping: '0.5'
+				};
+				Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+			}
+		</script>
 
-	<!-- Github buttons -->
-	<script async defer src="https://buttons.github.io/buttons.js"></script>
-</body>
+		<!-- Github buttons -->
+		<script async defer src="https://buttons.github.io/buttons.js"></script>
+	</div></body
+>

@@ -26,23 +26,7 @@
 	onMount(() => {
 		const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
 			if (firebaseUser) {
-				const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-				if (userDoc.exists()) {
-					goto('/');
-				} else {
-					// Prompt for role selection in a safer way, consider using a modal instead
-					userRole = prompt('Select your role (student/organization):');
-					if (userRole) {
-						await setDoc(doc(db, 'users', firebaseUser.uid), {
-							displayName: firebaseUser.displayName || 'Anonymous',
-							role: userRole
-						});
-						goto('/');
-					} else {
-						await auth.signOut();
-						goto('/login');
-					}
-				}
+				goto('/');
 			}
 		});
 
