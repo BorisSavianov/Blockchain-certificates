@@ -7,7 +7,8 @@ import {
 	createUserWithEmailAndPassword,
 	signOut,
 	onAuthStateChanged,
-	updateProfile
+	updateProfile,
+	sendEmailVerification
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getDatabase, ref, set, onValue } from 'firebase/database';
@@ -45,5 +46,6 @@ export {
 	setDoc,
 	getDoc,
 	GoogleAuthProvider,
-	rtdb
+	rtdb,
+	sendEmailVerification
 };

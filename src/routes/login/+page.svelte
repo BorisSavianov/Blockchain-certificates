@@ -6,6 +6,7 @@
 		signInWithEmailAndPassword,
 		createUserWithEmailAndPassword,
 		updateProfile,
+		sendEmailVerification,
 		onAuthStateChanged,
 		db,
 		doc,
@@ -26,7 +27,11 @@
 	onMount(() => {
 		const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
 			if (firebaseUser) {
-				goto('/');
+				if (!firebaseUser.emailVerified) {
+					goto('/verify-email');
+				} else {
+					goto('/');
+				}
 			}
 		});
 
@@ -41,11 +46,13 @@
 			const newUser = userCredential.user;
 
 			await updateProfile(newUser, { displayName });
+			await sendEmailVerification(newUser);
 			await setDoc(doc(db, 'users', newUser.uid), { displayName, role: userRole });
 
-			console.log('User registered:', newUser);
-			alert(`Registered as ${userRole}`);
-			goto('/');
+			alert(
+				`Registration successful! A verification email has been sent to ${email}. Please verify your email to continue.`
+			);
+			goto('/verify-email');
 		} catch (error) {
 			console.error('Error registering:', error);
 			alert(error.message);
@@ -57,7 +64,13 @@
 		try {
 			const userCredential = await signInWithEmailAndPassword(auth, email, password);
 			const signedInUser = userCredential.user;
-			console.log('User signed in:', signedInUser);
+
+			if (!signedInUser.emailVerified) {
+				alert('Please verify your email to continue.');
+				goto('/verify-email');
+				return;
+			}
+
 			goto('/');
 		} catch (error) {
 			console.error('Error signing in:', error);
