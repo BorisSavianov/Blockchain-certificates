@@ -216,7 +216,7 @@
 								</g>
 							</svg>
 						</div>
-						<span class="nav-link-text ms-1">Home</span>
+						<span class="nav-link-text ms-1">Начало</span>
 					</a>
 				</li>
 				<li class="nav-item">
@@ -255,7 +255,7 @@
 								</g>
 							</svg>
 						</div>
-						<span class="nav-link-text ms-1">Issue</span>
+						<span class="nav-link-text ms-1">Издай</span>
 					</a>
 				</li>
 				<li class="nav-item">
@@ -294,7 +294,7 @@
 								</g>
 							</svg>
 						</div>
-						<span class="nav-link-text ms-1">Certificates</span>
+						<span class="nav-link-text ms-1">Верифицирай</span>
 					</a>
 				</li>
 				<li class="nav-item">
@@ -337,7 +337,7 @@
 								</g>
 							</svg>
 						</div>
-						<span class="nav-link-text ms-1">Profile</span>
+						<span class="nav-link-text ms-1">Профил</span>
 					</a>
 				</li>
 			</ul>
@@ -354,11 +354,11 @@
 				<nav aria-label="breadcrumb">
 					<ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
 						<li class="breadcrumb-item text-sm">
-							<a class="opacity-5 text-dark" href="">Pages</a>
+							<a class="opacity-5 text-dark" href="">Страници</a>
 						</li>
-						<li class="breadcrumb-item text-sm text-dark active" aria-current="page">Home</li>
+						<li class="breadcrumb-item text-sm text-dark active" aria-current="page">Профил</li>
 					</ol>
-					<h6 class="font-weight-bolder mb-0">Home</h6>
+					<h6 class="font-weight-bolder mb-0">Профил</h6>
 				</nav>
 				<div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
 					<div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>
@@ -410,10 +410,10 @@
 				<div class="col-12 col-xl-4">
 					<div class="card h-100">
 						<div class="card-header pb-0 p-3">
-							<h6 class="mb-0">Platform Settings</h6>
+							<h6 class="mb-0">Настройки</h6>
 						</div>
 						<div class="card-body p-3">
-							<h6 class="text-uppercase text-body text-xs font-weight-bolder">Account</h6>
+							<h6 class="text-uppercase text-body text-xs font-weight-bolder">Акаунт</h6>
 							<ul class="list-group">
 								<li class="list-group-item border-0 px-0">
 									<div class="form-check form-switch ps-0">
@@ -429,7 +429,7 @@
 											data-bs-toggle="modal"
 											data-bs-target="#changeName"
 										>
-											Смени Име
+											Смени име
 										</button>
 									</div>
 									<!-- Modal -->
@@ -453,7 +453,7 @@
 												</div>
 												<div class="modal-body">
 													<input
-														style=" border: 1px solid black; padding: 12px 15px; margin: 0 auto; width: 100%;"
+														style="border: 1px solid black; padding: 12px 15px; margin: 0 auto; width: 100%;"
 														type="text"
 														bind:value={newName}
 													/>
@@ -463,7 +463,7 @@
 														>Затвори</button
 													>
 													<button type="button" class="btn btn-primary" on:click={changeName}
-														>Смени</button
+														>Смяна</button
 													>
 												</div>
 											</div>
@@ -472,14 +472,13 @@
 								</li>
 								<li class="list-group-item border-0 px-0">
 									<div class="d-flex form-check form-switch ps-0">
-										<!-- ADD EMAIL VERIFICATION -->
-										<!-- <button
+										<button
 											class="btn bg-primary text-white mb-0"
 											data-bs-toggle="modal"
 											data-bs-target="#changeEmail"
 										>
-											Change Email
-										</button> -->
+											Смени имейл
+										</button>
 									</div>
 									<!-- Modal -->
 									<div
@@ -492,7 +491,7 @@
 										<div class="modal-dialog">
 											<div class="modal-content">
 												<div class="modal-header">
-													<h1 class="modal-title fs-5" id="changeEmailLabel">Modal title</h1>
+													<h1 class="modal-title fs-5" id="changeEmailLabel">Смяна на имейл</h1>
 													<button
 														type="button"
 														class="btn-close"
@@ -502,17 +501,17 @@
 												</div>
 												<div class="modal-body">
 													<input
-														style="background-color: #eee; border: none; padding: 12px 15px; margin-left: 20px;"
+														style="border: 1px solid black; padding: 12px 15px; margin: 0 auto; width: 100%;"
 														type="email"
 														bind:value={newEmail}
 													/>
 												</div>
 												<div class="modal-footer">
 													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-														>Close</button
+														>Затвори</button
 													>
 													<button type="button" class="btn btn-primary" on:click={changeEmail}
-														>Save changes</button
+														>Смяна</button
 													>
 												</div>
 											</div>
@@ -520,7 +519,7 @@
 									</div>
 								</li>
 							</ul>
-							<h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4">Application</h6>
+							<!-- <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4">Application</h6>
 							<ul class="list-group">
 								<li class="list-group-item border-0 px-0">
 									<div class="form-check form-switch ps-0">
@@ -535,7 +534,7 @@
 										>
 									</div>
 								</li>
-							</ul>
+							</ul> -->
 						</div>
 					</div>
 				</div>
@@ -544,7 +543,7 @@
 						<div class="card-header pb-0 p-3">
 							<div class="row">
 								<div class="col-md-8 d-flex align-items-center">
-									<h6 class="mb-0">Profile Information</h6>
+									<h6 class="mb-0">Профилна инфромация</h6>
 								</div>
 								<div class="col-md-4 text-end">
 									<a href="javascript:;">
@@ -561,11 +560,11 @@
 						<div class="card-body p-3">
 							<ul class="list-group">
 								<li class="list-group-item border-0 ps-0 pt-0 text-sm">
-									<strong class="text-dark">Display Name:</strong> &nbsp; {displayName}
+									<strong class="text-dark">Име:</strong> &nbsp; {displayName}
 								</li>
 
 								<li class="list-group-item border-0 ps-0 text-sm">
-									<strong class="text-dark">Email:</strong> &nbsp; {userEmail}
+									<strong class="text-dark">Имейл:</strong> &nbsp; {userEmail}
 								</li>
 							</ul>
 						</div>

@@ -8,13 +8,14 @@ contract Certificate {
         string email;
         string dateIssued;
         bytes signature; // Store the digital signature
+        address issuer;  // Store the issuer's address
     }
 
     // Mapping from a student's address to a list of certificates
     mapping(address => CertificateInfo[]) private certificates;
 
     // Event for issuing certificates
-    event CertificateIssued(address student, string courseName, string studentName, string email, string dateIssued, bytes signature);
+    event CertificateIssued(address student, string courseName, string studentName, string email, string dateIssued, bytes signature, address issuer);
 
     // Function to issue a certificate
     function issueCertificate(
@@ -25,9 +26,9 @@ contract Certificate {
         string memory dateIssued,
         bytes memory signature // Accept the digital signature as input
     ) public {
-        // Store the certificate and its signature
-        certificates[student].push(CertificateInfo(courseName, studentName, email, dateIssued, signature));
-        emit CertificateIssued(student, courseName, studentName, email, dateIssued, signature);
+        // Store the certificate with the issuer's address (msg.sender is the issuer)
+        certificates[student].push(CertificateInfo(courseName, studentName, email, dateIssued, signature, msg.sender));
+        emit CertificateIssued(student, courseName, studentName, email, dateIssued, signature, msg.sender);
     }
 
     // Function to get all certificates associated with a student

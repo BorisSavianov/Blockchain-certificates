@@ -18,16 +18,40 @@ if (isBrowser) {
 }
 
 // Deployed contract address and ABI
-const contractAddress = '0x37569C287Cd6FA8a8534E1668c52000F571E84E7'; // Replace with your contract address
+const contractAddress = '0x7679b570572c51e9edf086b52a04835edfeab5b1'; // Replace with your contract address
 const abi = [
 	{
 		inputs: [
-			{ internalType: 'address', name: 'student', type: 'address' },
-			{ internalType: 'string', name: 'courseName', type: 'string' },
-			{ internalType: 'string', name: 'studentName', type: 'string' },
-			{ internalType: 'string', name: 'email', type: 'string' },
-			{ internalType: 'string', name: 'dateIssued', type: 'string' },
-			{ internalType: 'bytes', name: 'signature', type: 'bytes' }
+			{
+				internalType: 'address',
+				name: 'student',
+				type: 'address'
+			},
+			{
+				internalType: 'string',
+				name: 'courseName',
+				type: 'string'
+			},
+			{
+				internalType: 'string',
+				name: 'studentName',
+				type: 'string'
+			},
+			{
+				internalType: 'string',
+				name: 'email',
+				type: 'string'
+			},
+			{
+				internalType: 'string',
+				name: 'dateIssued',
+				type: 'string'
+			},
+			{
+				internalType: 'bytes',
+				name: 'signature',
+				type: 'bytes'
+			}
 		],
 		name: 'issueCertificate',
 		outputs: [],
@@ -35,20 +59,51 @@ const abi = [
 		type: 'function'
 	},
 	{
-		inputs: [{ internalType: 'address', name: 'student', type: 'address' }],
+		inputs: [
+			{
+				internalType: 'address',
+				name: 'student',
+				type: 'address'
+			}
+		],
 		name: 'getCertificatesByAddress',
 		outputs: [
 			{
-				components: [
-					{ internalType: 'string', name: 'courseName', type: 'string' },
-					{ internalType: 'string', name: 'studentName', type: 'string' },
-					{ internalType: 'string', name: 'email', type: 'string' },
-					{ internalType: 'string', name: 'dateIssued', type: 'string' },
-					{ internalType: 'bytes', name: 'signature', type: 'bytes' }
-				],
 				internalType: 'struct Certificate.CertificateInfo[]',
 				name: '',
-				type: 'tuple[]'
+				type: 'tuple[]',
+				components: [
+					{
+						internalType: 'string',
+						name: 'courseName',
+						type: 'string'
+					},
+					{
+						internalType: 'string',
+						name: 'studentName',
+						type: 'string'
+					},
+					{
+						internalType: 'string',
+						name: 'email',
+						type: 'string'
+					},
+					{
+						internalType: 'string',
+						name: 'dateIssued',
+						type: 'string'
+					},
+					{
+						internalType: 'bytes',
+						name: 'signature',
+						type: 'bytes'
+					},
+					{
+						internalType: 'address',
+						name: 'issuer',
+						type: 'address'
+					}
+				]
 			}
 		],
 		stateMutability: 'view',
@@ -57,18 +112,53 @@ const abi = [
 	{
 		anonymous: false,
 		inputs: [
-			{ indexed: true, internalType: 'address', name: 'student', type: 'address' },
-			{ indexed: false, internalType: 'string', name: 'courseName', type: 'string' },
-			{ indexed: false, internalType: 'string', name: 'studentName', type: 'string' },
-			{ indexed: false, internalType: 'string', name: 'email', type: 'string' },
-			{ indexed: false, internalType: 'string', name: 'dateIssued', type: 'string' },
-			{ indexed: false, internalType: 'bytes', name: 'signature', type: 'bytes' }
+			{
+				indexed: true,
+				internalType: 'address',
+				name: 'student',
+				type: 'address'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'courseName',
+				type: 'string'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'studentName',
+				type: 'string'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'email',
+				type: 'string'
+			},
+			{
+				indexed: false,
+				internalType: 'string',
+				name: 'dateIssued',
+				type: 'string'
+			},
+			{
+				indexed: false,
+				internalType: 'bytes',
+				name: 'signature',
+				type: 'bytes'
+			},
+			{
+				indexed: false,
+				internalType: 'address',
+				name: 'issuer',
+				type: 'address'
+			}
 		],
 		name: 'CertificateIssued',
 		type: 'event'
 	}
 ];
-
 // Create contract instance only on client-side
 export const contract =
 	isBrowser && provider ? new ethers.Contract(contractAddress, abi, signer) : null;

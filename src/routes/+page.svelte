@@ -23,7 +23,7 @@
 	// Cleanup the subscription on component destroy
 	onDestroy(unsubscribe);
 
-	onMount(() => {
+	onMount(async () => {
 		const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
 		const iconSidenav = document.getElementById('iconSidenav');
 		const sidenav = document.getElementById('sidenav-main');
@@ -56,10 +56,11 @@
 		};
 	});
 
-	auth.onAuthStateChanged((firebaseUser) => {
+	auth.onAuthStateChanged(async (firebaseUser) => {
 		user = firebaseUser;
 		if (user) {
 			loadCertificates();
+			issuedCertificatesCount = await fetchIssuedCertificatesCount(user.uid);
 		}
 	});
 
@@ -86,6 +87,33 @@
 		const q = query(certificatesRef, orderBy('createdAt', 'desc'), limit(6));
 		const snapshot = await getDocs(q);
 		certificates = snapshot.docs.map((doc) => doc.data());
+	}
+
+	import { getDoc } from 'firebase/firestore';
+	let issuedCertificatesCount = 0;
+	// Function to fetch the issued certificates count for a specific user
+	async function fetchIssuedCertificatesCount(userUid) {
+		try {
+			const userRef = doc(collection(db, 'users'), userUid);
+			const certificatesRef = collection(userRef, 'certificates');
+
+			// Document to track the count of issued certificates
+			const trackerDoc = doc(certificatesRef, 'tracker');
+
+			// Fetch the document
+			const trackerSnapshot = await getDoc(trackerDoc);
+
+			if (trackerSnapshot.exists()) {
+				const data = trackerSnapshot.data();
+				console.log(data.issuedCertificates);
+				return data.issuedCertificates || 0; // Return the count or 0 if not present
+			} else {
+				return 0; // Return 0 if the document doesn't exist
+			}
+		} catch (error) {
+			console.error('Error fetching issued certificates count:', error);
+			return 0; // Return 0 in case of an error
+		}
 	}
 </script>
 
@@ -174,7 +202,7 @@
 											</g>
 										</svg>
 									</div>
-									<span class="nav-link-text ms-1">Home</span>
+									<span class="nav-link-text ms-1">Начало</span>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -213,7 +241,7 @@
 											</g>
 										</svg>
 									</div>
-									<span class="nav-link-text ms-1">Issue</span>
+									<span class="nav-link-text ms-1">Издай</span>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -252,7 +280,7 @@
 											</g>
 										</svg>
 									</div>
-									<span class="nav-link-text ms-1">Certificates</span>
+									<span class="nav-link-text ms-1">Верифицирай</span>
 								</a>
 							</li>
 							<li class="nav-item">
@@ -295,7 +323,7 @@
 											</g>
 										</svg>
 									</div>
-									<span class="nav-link-text ms-1">Profile</span>
+									<span class="nav-link-text ms-1">Профил</span>
 								</a>
 							</li>
 						</ul>
@@ -312,11 +340,13 @@
 							<nav aria-label="breadcrumb">
 								<ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
 									<li class="breadcrumb-item text-sm">
-										<a class="opacity-5 text-dark" href="">Pages</a>
+										<a class="opacity-5 text-dark" href="">Страници</a>
 									</li>
-									<li class="breadcrumb-item text-sm text-dark active" aria-current="page">Home</li>
+									<li class="breadcrumb-item text-sm text-dark active" aria-current="page">
+										Начало
+									</li>
 								</ol>
-								<h6 class="font-weight-bolder mb-0">Home</h6>
+								<h6 class="font-weight-bolder mb-0">Начало</h6>
 							</nav>
 							<div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
 								<div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>
@@ -354,7 +384,9 @@
 																aria-hidden="true"
 															></i>
 														</div>
-														<h5 class="text-white font-weight-bolder mb-0 mt-3">1600</h5>
+														<h5 class="text-white font-weight-bolder mb-0 mt-3">
+															{issuedCertificatesCount}
+														</h5>
 														<span class="text-white text-sm">Издадени сертификата</span>
 													</div>
 												</div>

@@ -47,5 +47,6 @@ export {
 	getDoc,
 	GoogleAuthProvider,
 	rtdb,
-	sendEmailVerification
+	sendEmailVerification,
+	getFirestore
 };

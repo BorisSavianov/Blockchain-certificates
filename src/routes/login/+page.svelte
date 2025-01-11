@@ -117,38 +117,38 @@
 			<!-- Sign Up Form -->
 			<div class="form-container sign-up-container">
 				<form action="#">
-					<h1>Create Account</h1>
+					<h1>Създай акаунт</h1>
 					<div class="social-container">
 						<a class="social" on:click|preventDefault={signInWithGoogle}>
 							<i class="fab fa-google-plus-g"></i>
 						</a>
 					</div>
-					<span>or use your email for registration</span>
-					<input type="text" placeholder="Name" bind:value={displayName} />
-					<input type="email" placeholder="Email" bind:value={email} />
-					<input type="password" placeholder="Password" bind:value={password} />
+					<span>или използвайте вашият имейл за регистрация</span>
+					<input type="text" placeholder="Име" bind:value={displayName} />
+					<input type="email" placeholder="Имейл" bind:value={email} />
+					<input type="password" placeholder="Парола" bind:value={password} />
 					<select class="select" bind:value={userRole}>
-						<option value="" disabled>Select Role</option>
-						<option value="student">Student</option>
-						<option value="organization">Organization</option>
+						<option value="" disabled>Изберете роля</option>
+						<option value="student">Студент</option>
+						<option value="organization">Организация</option>
 					</select>
-					<button type="button" on:click={register}>Sign Up</button>
+					<button type="button" on:click={register}>Създай акаунт</button>
 				</form>
 			</div>
 
 			<!-- Sign In Form -->
 			<div class="form-container sign-in-container">
 				<form action="#">
-					<h1>Sign in</h1>
+					<h1>Вписване</h1>
 					<div class="social-container">
 						<a class="social" on:click|preventDefault={signInWithGoogle}>
 							<i class="fab fa-google-plus-g"></i>
 						</a>
 					</div>
-					<span>or use your account</span>
-					<input type="email" placeholder="Email" bind:value={email} />
-					<input type="password" placeholder="Password" bind:value={password} />
-					<button type="button" on:click={signIn}>Sign In</button>
+					<span>или използвайте вашият акаунт</span>
+					<input type="email" placeholder="Имейл" bind:value={email} />
+					<input type="password" placeholder="Парола" bind:value={password} />
+					<button type="button" on:click={signIn}>Влизане</button>
 				</form>
 			</div>
 
@@ -156,14 +156,14 @@
 			<div class="overlay-container">
 				<div class="overlay">
 					<div class="overlay-panel overlay-left">
-						<h1>Welcome Back!</h1>
-						<p>To keep connected with us please login with your personal info</p>
-						<button class="ghost" on:click={() => (isRightPanelActive = false)}>Sign In</button>
+						<h1>Здравейте отново!</h1>
+						<p>За да се впишете със съществуващ акаунт, моля, влезте с вашата лична информация</p>
+						<button class="ghost" on:click={() => (isRightPanelActive = false)}>Вписване</button>
 					</div>
 					<div class="overlay-panel overlay-right">
-						<h1>Hello, Friend!</h1>
-						<p>Enter your personal details and start journey with us</p>
-						<button class="ghost" on:click={() => (isRightPanelActive = true)}>Sign Up</button>
+						<h1>Добре дошли!</h1>
+						<p>Въведете вашите лични данни и създадете акаунт с нас сега</p>
+						<button class="ghost" on:click={() => (isRightPanelActive = true)}>Създай</button>
 					</div>
 				</div>
 			</div>

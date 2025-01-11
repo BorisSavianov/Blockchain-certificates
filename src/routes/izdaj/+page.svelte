@@ -108,6 +108,7 @@
 		return signature;
 	}
 
+	let drawingUrl;
 	async function generateCertificatePDF(
 		studentAddress,
 		courseName,
@@ -115,45 +116,71 @@
 		email,
 		dateIssued
 	) {
-		const pdfDoc = await PDFDocument.create();
-		const page = pdfDoc.addPage([600, 400]);
+		// Зареждане на оригиналния PDF
+		const existingPdfBytes = await fetch('proba.pdf').then((res) => res.arrayBuffer());
+		const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
-		const qrCodeUrl = `http://localhost:5173/verify?address=${studentAddress}`;
-		const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUrl);
+		// Вземи първата страница
+		const page = pdfDoc.getPage(0);
 
-		// Add title
-		page.drawText('Certificate of Completion', {
-			x: page.getWidth() / 2 - 100,
-			y: page.getHeight() - 50,
-			size: 30,
-			color: rgb(0, 0, 0),
-			align: 'center'
+		// Координати за замяна на текста
+		const replacements = [
+			{ text: courseName, x: 320, y: 400, size: 58 },
+			{ text: studentName, x: 330, y: 290, size: 24 },
+			{ text: studentAddress, x: 240, y: 230, size: 12 },
+			{ text: dateIssued, x: 500, y: 150, size: 12 }
+		];
+
+		// Добави новия текст
+		for (const { text, x, y, size } of replacements) {
+			page.drawText(text, {
+				x,
+				y,
+				size,
+				color: rgb(0, 0, 0)
+			});
+		}
+
+		// Конвертиране на рисунката от канвас в base64 PNG
+		drawingUrl = canvas.toDataURL('image/png');
+
+		// Вмъкване на рисунката в PDF
+		const drawingImage = await pdfDoc.embedPng(drawingUrl);
+
+		// Постави рисунката в PDF на зададената позиция
+		// Променени са координатите и размерите на изображението, за да не е сплескано
+		page.drawImage(drawingImage, {
+			x: 120, // Позиция по x
+			y: 130, // Позиция по y
+			width: 200, // Ширина на изображението
+			height: 120 // Височина на изображението, коригирана, за да изглежда правилно
 		});
 
-		// Add certificate details
-		page.drawText(`Course Name: ${courseName}`, { x: 50, y: page.getHeight() - 100, size: 20 });
-		page.drawText(`Student Name: ${studentName}`, { x: 50, y: page.getHeight() - 130, size: 20 });
-		page.drawText(`Email: ${email}`, { x: 50, y: page.getHeight() - 160, size: 20 });
-		page.drawText(`Date Issued: ${dateIssued}`, { x: 50, y: page.getHeight() - 190, size: 20 });
+		// Генерирай QR код
+		const qrCodeUrl = `http://localhost:5173/verificiraj?address=${studentAddress}`;
+		const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUrl);
+		const qrImage = await pdfDoc.embedPng(qrCodeDataUrl);
 
-		// Add QR code image
-		const qrCodeImage = await pdfDoc.embedPng(qrCodeDataUrl);
-		page.drawImage(qrCodeImage, {
-			x: page.getWidth() - 150,
-			y: page.getHeight() - 200,
+		// Постави QR кода в PDF
+		page.drawImage(qrImage, {
+			x: 50,
+			y: 50,
 			width: 100,
 			height: 100
 		});
 
-		// Save PDF
+		// Запази PDF файла
 		const pdfBytes = await pdfDoc.save();
+
+		// Изтегли обновения PDF
 		const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'certificate.pdf';
-		a.click();
+		const link = document.createElement('a');
+		link.href = URL.createObjectURL(blob);
+		link.download = 'updated_certificate.pdf';
+		link.click();
 	}
+
+	import { provider, signer } from '$lib/eth'; // Ensure 'contract' is also imported from your eth library
 
 	async function issueCertificate() {
 		if (!isContractAvailable) {
@@ -187,12 +214,16 @@
 		}
 
 		try {
+			// Get the issuer's Ethereum address (the logged-in user's address)
+			const issuerAddress = await signer.getAddress(); // Ensure signer is available
+
 			// Set the certificate status to pending
 			certificateStatus = 'pending';
 			certificateStatusMessage = 'Certificate issuance in progress...';
 			showStatus = true;
 			await saveCertificateStatusToDB(studentAddress, certificateStatus);
 
+			// Assuming signCertificate function is available and works as expected
 			const signature = await signCertificate(
 				studentAddress,
 				courseName,
@@ -201,6 +232,7 @@
 				dateIssued
 			);
 
+			// Issue the certificate through the contract
 			const tx = await contract.issueCertificate(
 				studentAddress,
 				courseName,
@@ -211,7 +243,7 @@
 				{ gasLimit: 1000000 }
 			);
 
-			await tx.wait();
+			await tx.wait(); // Wait for the transaction to confirm
 
 			// Once transaction is confirmed, update the status to issued
 			certificateStatus = 'completed';
@@ -225,9 +257,16 @@
 
 			alert('Certificate issued successfully');
 
+			// Save the issued certificate details along with the issuer's Ethereum address
+			await saveIssuedCertificate(courseName, studentName, dateIssued, signature);
+
+			// Generate the certificate PDF
 			await generateCertificatePDF(studentAddress, courseName, studentName, user.email, dateIssued);
-			// Call this function inside issueCertificate after issuing the certificate
-			await saveIssuedCertificate(courseName, studentName, dateIssued);
+
+			// Update issued certificates count for the user
+			incrementIssuedCertificates(user.uid); // This might be updated to use Ethereum address, not user.uid
+
+			// Clear the form inputs
 			courseName = '';
 			studentName = '';
 			studentAddress = '';
@@ -239,6 +278,24 @@
 			certificateStatusMessage = 'Failed to issue certificate.';
 			showStatus = true;
 			await saveCertificateStatusToDB(studentAddress, certificateStatus);
+		}
+	}
+
+	import { increment, setDoc, doc, collection } from 'firebase/firestore';
+	import { getFirestore } from '$lib/firebase'; // Adjust this according to your setup
+	const db = getFirestore();
+	// Function to increment the issued certificates count for a specific user
+	async function incrementIssuedCertificates(userUid) {
+		try {
+			const userRef = doc(collection(db, 'users'), userUid);
+			const certificatesRef = collection(userRef, 'certificates');
+
+			// Document to track the count of issued certificates
+			const trackerDoc = doc(certificatesRef, 'tracker');
+
+			await setDoc(trackerDoc, { issuedCertificates: increment(1) }, { merge: true });
+		} catch (error) {
+			console.error('Error incrementing issued certificates count:', error);
 		}
 	}
 
@@ -315,22 +372,11 @@
 		set(blanksRef, blanks);
 	}
 
-	import {
-		getFirestore,
-		collection,
-		doc,
-		setDoc,
-		query,
-		orderBy,
-		limit,
-		getDocs
-	} from 'firebase/firestore';
-
-	const db = getFirestore();
+	import { query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 	import { serverTimestamp, deleteDoc } from 'firebase/firestore';
 
-	async function saveIssuedCertificate(courseName, studentName, dateIssued) {
+	async function saveIssuedCertificate(courseName, studentName, dateIssued, signature) {
 		if (!user) return;
 
 		const userRef = doc(collection(db, 'users'), user.uid);
@@ -344,20 +390,14 @@
 			courseName,
 			studentName,
 			dateIssued,
-			createdAt: serverTimestamp()
+			createdAt: serverTimestamp(),
+			drawingUrl,
+			signature
 		});
 
 		// Retrieve all certificates ordered by createdAt
 		const q = query(certificatesRef, orderBy('createdAt', 'desc'));
 		const snapshot = await getDocs(q);
-
-		// If there are more than six certificates, delete the oldest
-		if (snapshot.size > 6) {
-			const oldestDocs = snapshot.docs.slice(6); // Get all docs after the 6th
-			for (const doc of oldestDocs) {
-				await deleteDoc(doc.ref); // Delete each one
-			}
-		}
 
 		// Update the certificates list to include only the six most recent
 		certificates = snapshot.docs.slice(0, 6).map((doc) => doc.data());
@@ -374,6 +414,53 @@
 		const snapshot = await getDocs(q);
 		certificates = snapshot.docs.map((doc) => doc.data());
 	}
+
+	let canvas, ctx;
+	let isPainting = false;
+	let lineWidth = 5;
+
+	onMount(() => {
+		canvas = document.getElementById('drawing-board');
+		ctx = canvas.getContext('2d');
+
+		// Задаване на размерите на canvas
+		canvas.width = 200;
+		canvas.height = 200;
+	});
+
+	const draw = (e) => {
+		if (!isPainting) return;
+
+		const rect = canvas.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+
+		ctx.lineWidth = lineWidth;
+		ctx.lineCap = 'round';
+		ctx.lineTo(x, y);
+		ctx.stroke();
+	};
+
+	const startDrawing = () => {
+		isPainting = true;
+	};
+
+	const stopDrawing = () => {
+		isPainting = false;
+		ctx.beginPath();
+	};
+
+	const clearCanvas = () => {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	};
+
+	const saveCanvas = () => {
+		const dataURL = canvas.toDataURL('image/png');
+		const link = document.createElement('a');
+		link.href = dataURL;
+		link.download = 'drawing.png';
+		link.click();
+	};
 </script>
 
 <html lang="en">
@@ -457,7 +544,7 @@
 									</g>
 								</svg>
 							</div>
-							<span class="nav-link-text ms-1">Home</span>
+							<span class="nav-link-text ms-1">Начало</span>
 						</a>
 					</li>
 					<li class="nav-item">
@@ -496,7 +583,7 @@
 									</g>
 								</svg>
 							</div>
-							<span class="nav-link-text ms-1">Issue</span>
+							<span class="nav-link-text ms-1">Издай</span>
 						</a>
 					</li>
 					<li class="nav-item">
@@ -535,7 +622,7 @@
 									</g>
 								</svg>
 							</div>
-							<span class="nav-link-text ms-1">Certificates</span>
+							<span class="nav-link-text ms-1">Верифицирай</span>
 						</a>
 					</li>
 					<li class="nav-item">
@@ -578,7 +665,7 @@
 									</g>
 								</svg>
 							</div>
-							<span class="nav-link-text ms-1">Profile</span>
+							<span class="nav-link-text ms-1">Профил</span>
 						</a>
 					</li>
 				</ul>
@@ -595,11 +682,11 @@
 					<nav aria-label="breadcrumb">
 						<ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
 							<li class="breadcrumb-item text-sm">
-								<a class="opacity-5 text-dark" href="">Pages</a>
+								<a class="opacity-5 text-dark" href="">Страници</a>
 							</li>
-							<li class="breadcrumb-item text-sm text-dark active" aria-current="page">Home</li>
+							<li class="breadcrumb-item text-sm text-dark active" aria-current="page">Издай</li>
 						</ol>
-						<h6 class="font-weight-bolder mb-0">Home</h6>
+						<h6 class="font-weight-bolder mb-0">Издай</h6>
 					</nav>
 					<div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
 						<div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>
@@ -646,7 +733,7 @@
 													class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
 													type="text"
 													bind:value={courseName}
-													placeholder="Course Name"
+													placeholder="Име на курса"
 												/>
 											</div>
 											<div class="col-md-6">
@@ -655,7 +742,7 @@
 														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
 														type="text"
 														bind:value={studentName}
-														placeholder="Student Name"
+														placeholder="Име на студента"
 													/>
 												</div>
 											</div>
@@ -665,7 +752,7 @@
 														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
 														type="text"
 														bind:value={studentAddress}
-														placeholder="Student Address (Ethereum Address)"
+														placeholder="Адрес на студента (Eth)"
 													/>
 												</div>
 											</div>
@@ -675,7 +762,7 @@
 														class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row"
 														type="text"
 														bind:value={dateIssued}
-														placeholder="Issue Date (YYYY-MM-DD)"
+														placeholder="Дата (ГГГГ-ММ-ДД)"
 													/>
 												</div>
 											</div>
@@ -702,13 +789,13 @@
 														<a
 															class="btn btn-link text-danger text-gradient px-3 mb-0"
 															on:click={() => deleteBlank(index)}
-															><i class="far fa-trash-alt me-2"></i>Delete</a
+															><i class="far fa-trash-alt me-2"></i>Изтрий</a
 														>
 														<a
 															class="btn btn-link text-dark px-3 mb-0"
 															on:click={() => loadBlank(index)}
 															><i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"
-															></i>Edit</a
+															></i>Избери</a
 														>
 													</div>
 												</li>
@@ -749,6 +836,20 @@
 									</div>
 								</div>
 							</div>
+						</div>
+					</div>
+					<div class="container">
+						<div id="toolbar">
+							<button on:click={clearCanvas}>Clear</button>
+							<button on:click={saveCanvas}>Save</button>
+						</div>
+						<div class="drawing-board">
+							<canvas
+								id="drawing-board"
+								on:mousedown={startDrawing}
+								on:mouseup={stopDrawing}
+								on:mousemove={draw}
+							></canvas>
 						</div>
 					</div>
 				</div>
