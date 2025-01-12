@@ -108,13 +108,13 @@
 		return signature;
 	}
 
-	let drawingUrl;
 	async function generateCertificatePDF(
 		studentAddress,
 		courseName,
 		studentName,
 		email,
-		dateIssued
+		dateIssued,
+		drawingUrl
 	) {
 		// Зареждане на оригиналния PDF
 		const existingPdfBytes = await fetch('proba.pdf').then((res) => res.arrayBuffer());
@@ -140,9 +140,6 @@
 				color: rgb(0, 0, 0)
 			});
 		}
-
-		// Конвертиране на рисунката от канвас в base64 PNG
-		drawingUrl = canvas.toDataURL('image/png');
 
 		// Вмъкване на рисунката в PDF
 		const drawingImage = await pdfDoc.embedPng(drawingUrl);
@@ -180,8 +177,7 @@
 		link.click();
 	}
 
-	import { provider, signer } from '$lib/eth'; // Ensure 'contract' is also imported from your eth library
-
+	let drawingUrl;
 	async function issueCertificate() {
 		if (!isContractAvailable) {
 			alert('Contract is not available. Ensure you are on the client side.');
@@ -199,24 +195,24 @@
 		dateIssued = sanitizeInput(dateIssued);
 
 		if (!courseName || !studentName || !studentAddress || !dateIssued) {
-			alert('Please fill in all fields');
+			alert('Моля попълнете всички полета');
 			return;
 		}
 
 		if (!isValidDate(dateIssued)) {
-			alert('Invalid date format. Use YYYY-MM-DD.');
+			alert('Невалидана дата. Използвайте YYYY-MM-DD.');
 			return;
 		}
 
 		if (!isValidAddress(studentAddress)) {
-			alert('Invalid student address');
+			alert('Невалиден адрес на студента');
 			return;
 		}
 
-		try {
-			// Get the issuer's Ethereum address (the logged-in user's address)
-			const issuerAddress = await signer.getAddress(); // Ensure signer is available
+		// Конвертиране на рисунката от канвас в base64 PNG
+		drawingUrl = canvas.toDataURL('image/png');
 
+		try {
 			// Set the certificate status to pending
 			certificateStatus = 'pending';
 			certificateStatusMessage = 'Certificate issuance in progress...';
@@ -239,8 +235,7 @@
 				studentName,
 				user.email,
 				dateIssued,
-				signature,
-				{ gasLimit: 1000000 }
+				signature
 			);
 
 			await tx.wait(); // Wait for the transaction to confirm
@@ -261,7 +256,14 @@
 			await saveIssuedCertificate(courseName, studentName, dateIssued, signature);
 
 			// Generate the certificate PDF
-			await generateCertificatePDF(studentAddress, courseName, studentName, user.email, dateIssued);
+			await generateCertificatePDF(
+				studentAddress,
+				courseName,
+				studentName,
+				user.email,
+				dateIssued,
+				drawingUrl
+			);
 
 			// Update issued certificates count for the user
 			incrementIssuedCertificates(user.uid); // This might be updated to use Ethereum address, not user.uid

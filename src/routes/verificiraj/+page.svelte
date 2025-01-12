@@ -129,9 +129,6 @@
 		verificationResults = []; // Clear previous results
 
 		try {
-			// Show loading state
-			isLoading = true;
-
 			// Fetch certificates from the contract
 			const results = await contract.getCertificatesByAddress(address);
 			if (results.length === 0) {
@@ -173,8 +170,6 @@
 		} catch (err) {
 			console.error('Error fetching certificates:', err);
 			errorMessage = 'Неуспешно намиране на сертификати.';
-		} finally {
-			isLoading = false; // Hide loading spinner
 		}
 	}
 
@@ -184,7 +179,7 @@
 		const certificateHash = ethers.utils.solidityKeccak256(
 			['address', 'string', 'string', 'string', 'string'],
 			[
-				certificate.issuerAddress, // Use issuer address
+				certificate.studentAddress, // Use issuer address
 				certificate.courseName,
 				certificate.studentName,
 				certificate.email,
@@ -814,7 +809,7 @@
 													>
 													<th
 														class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
-														>Имейл</th
+														>Имейл на издателя</th
 													>
 													<th
 														class="text-uppercase text-secondary text-xxs font-weight-bolder text-center opacity-7 ps-2"
