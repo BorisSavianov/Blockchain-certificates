@@ -5,9 +5,21 @@
 	<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
+	<!-- Core JS Files -->
+	<script src="assets/js/core/popper.min.js" defer></script>
+	<script src="assets/js/core/bootstrap.min.js" defer></script>
+	<script src="assets/js/plugins/perfect-scrollbar.min.js" defer></script>
+	<script src="assets/js/plugins/smooth-scrollbar.min.js" defer></script>
+	<script src="assets/js/plugins/chartjs.min.js" defer></script>
 	%sveltekit.head%
+
+
 </head>
 <body data-sveltekit-preload-data="hover">
+	<noscript>
+		<strong>We're sorry but this app doesn't work properly without JavaScript enabled. Please enable it to
+			continue.</strong>
+	</noscript>
 	<div style="display: contents">%sveltekit.body%</div>
 </body>
 </html>

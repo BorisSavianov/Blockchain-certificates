@@ -19,15 +19,15 @@
 				await user.reload();
 				if (!user.emailVerified) {
 					await user.sendEmailVerification();
-					message = 'Verification email resent. Please check your inbox.';
+					message = 'Верификационен имейл изпратен. Моля проверете пощата си.';
 				} else {
-					message = 'Your email is already verified. Redirecting to the home page.';
+					message = 'Вашият имейл вече е потвърден. Връщане в начало.';
 					goto('/');
 				}
 			}
 		} catch (error) {
-			console.error('Error resending verification email:', error);
-			message = 'Error resending verification email. Please try again later.';
+			console.error('Грешка при изпращане на имейл:', error);
+			message = 'Грешка при изпращане на имейл. Моля опитайте по-късно.';
 		}
 	}
 
@@ -35,32 +35,62 @@
 		try {
 			if (user) {
 				await user.delete();
-				alert('Your account has been deleted.');
-				goto('/'); // Redirect to the homepage or login page
+				alert('Вашият акаунт е изтрит.');
+				goto('/login');
 			}
 		} catch (error) {
-			console.error('Error deleting account:', error);
-			message = 'Error deleting account. Please try again later.';
+			console.error('Грешка при изтриване на акаунт:', error);
+			message = 'Грешка при изтриване на акаунт. Моля опитайте по-късно.';
 		}
 	}
 </script>
 
-<main>
-	<h1>Email Verification Required</h1>
-	<p>
-		Please verify your email address to continue using the platform. Check your inbox for a
-		verification email.
-	</p>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+		<link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png" />
+		<link rel="icon" type="image/png" href="assets/img/favicon.png" />
+		<title>Начало</title>
+		<!--     Fonts and icons     -->
+		<link
+			href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800"
+			rel="stylesheet"
+		/>
+		<!-- Nucleo Icons -->
+		<link
+			href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-icons.css"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-svg.css"
+			rel="stylesheet"
+		/>
+		<!-- Font Awesome Icons -->
+		<script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+		<!-- CSS Files -->
+		<link id="pagestyle" href="assets/css/soft-ui-dashboard.css?v=1.1.0" rel="stylesheet" />
+	</head>
 
-	{#if message}
-		<p>{message}</p>
-	{/if}
+	<main>
+		<h1>Задължително потвърждаване на имейл</h1>
+		<p>
+			Моля, потвърдете своя имейл адрес, за да продължите да използвате платформата. Проверете
+			пощата си за имейл за потвърждение.
+		</p>
 
-	<button on:click={resendVerificationEmail}>Resend Verification Email</button>
-	<button on:click={deleteAccount} style="margin-top: 10px; background-color: red;"
-		>Delete Account</button
-	>
-</main>
+		{#if message}
+			<p>{message}</p>
+		{/if}
+
+		<button class="btn btn-primary" on:click={resendVerificationEmail}>Изпрати нов имейл</button>
+		<button
+			class="btn btn-danger"
+			on:click={deleteAccount}
+			style="margin-top: 10px; background-color: red;">Изтрий акаунт</button
+		>
+	</main>
+</html>
 
 <style>
 	main {
@@ -79,21 +109,5 @@
 		border: none;
 		border-radius: 5px;
 		cursor: pointer;
-	}
-
-	button:first-child {
-		background-color: #007bff;
-	}
-
-	button:first-child:hover {
-		background-color: #0056b3;
-	}
-
-	button:last-child {
-		background-color: red;
-	}
-
-	button:last-child:hover {
-		background-color: darkred;
 	}
 </style>

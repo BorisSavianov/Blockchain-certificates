@@ -3,6 +3,8 @@
 	import { authStore } from '$lib/stores/authStore.js';
 	import { onDestroy } from 'svelte';
 	import { page } from '$app/stores'; // Import page store to check current route
+	import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+	import { db } from '$lib/firebase';
 
 	let authSub = { loading: true, isLoggedIn: false }; // Initial state
 
@@ -20,7 +22,8 @@
 	import { auth } from '$lib/firebase';
 	import { goto } from '$app/navigation';
 
-	let user;
+	let role = '';
+	let selectedOrg;
 
 	onMount(async () => {
 		auth.onAuthStateChanged(async (currentUser) => {
@@ -30,8 +33,28 @@
 					goto('/verify-email');
 				}
 			} else {
-				// Redirect to login or home if not authenticated
+				// Redirect to login if not authenticated
 				goto('/login');
+			}
+
+			const user = auth.currentUser;
+			if (user) {
+				// Fetch role from Firestore
+				const userDoc = doc(db, 'users', user.uid);
+				const docSnap = await getDoc(userDoc);
+				if (docSnap.exists()) {
+					role = docSnap.data().role || 'User';
+					selectedOrg = docSnap.data().selectedOrg;
+				} else {
+					console.log('No user role found in Firestore.');
+				}
+				if (
+					role === 'organization' &&
+					!selectedOrg &&
+					$page.url.pathname !== '/organization-select'
+				) {
+					goto('/organization-select');
+				}
 			}
 		});
 	});
@@ -41,7 +64,7 @@
 	<p>Loading...</p>
 {:else if authSub.isLoggedIn}
 	<slot /> <!-- Show protected content if logged in -->
-{:else if $page.url.pathname === '/login'}
+{:else if !authSub.isLoggedIn && $page.url.pathname === '/login'}
 	<slot /> <!-- Allow access to login page if not logged in -->
 {:else}
 	<a href="/login">Please log in</a>

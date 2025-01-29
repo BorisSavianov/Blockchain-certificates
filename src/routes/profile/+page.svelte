@@ -1,7 +1,15 @@
 <script>
 	import { onMount } from 'svelte';
 	import { getAuth, signOut, deleteUser, updateProfile, updateEmail } from 'firebase/auth';
-	import { getFirestore, doc, getDoc, deleteDoc } from 'firebase/firestore';
+	import {
+		getFirestore,
+		doc,
+		getDoc,
+		deleteDoc,
+		getDocs,
+		collection,
+		updateDoc
+	} from 'firebase/firestore';
 	import { auth, db } from '$lib/firebase'; // Adjust according to your file structure
 	import { goto } from '$app/navigation';
 
@@ -9,6 +17,9 @@
 	let displayName = '';
 	let role = '';
 	let userEmail = '';
+	let selectedOrg = '';
+	let organizationDetails = null;
+	let organizationUsers = [];
 
 	onMount(async () => {
 		const user = auth.currentUser;
@@ -19,11 +30,19 @@
 			displayName = user.displayName || 'User';
 			userEmail = user.email || 'Not available';
 
-			// Fetch role from Firestore
+			// Fetch role and selected organization from Firestore
 			const userDoc = doc(db, 'users', user.uid);
 			const docSnap = await getDoc(userDoc);
 			if (docSnap.exists()) {
-				role = docSnap.data().role || 'User';
+				const userData = docSnap.data();
+				role = userData.role || 'User';
+				selectedOrg = userData.selectedOrg || null;
+
+				// If the user has a selected organization, fetch its details
+				if (selectedOrg) {
+					await fetchOrganizationDetails(selectedOrg);
+					await fetchOrganizationUsers(selectedOrg);
+				}
 			} else {
 				console.log('No user role found in Firestore.');
 			}
@@ -38,7 +57,6 @@
 		let className = 'g-sidenav-pinned';
 
 		function toggleSidenav() {
-			console.log('Toggling sidenav');
 			if (innerBody.classList.contains(className)) {
 				innerBody.classList.remove(className);
 				setTimeout(() => {
@@ -104,12 +122,25 @@
 
 		if (user) {
 			try {
+				// Update the user's displayName in Firebase Authentication
 				await updateProfile(user, { displayName: newName });
+
+				// Now update the displayName in Firestore
+				const userRef = doc(db, 'users', user.uid); // Reference to the user's document in Firestore
+				await updateDoc(userRef, { displayName: newName }); // Update Firestore with the new name
+
+				// Update local variable for displayName
+				displayName = newName;
+
+				// Provide feedback to the user
 				alert('Name successfully updated.');
-				displayName = newName; // Update the local variable
 			} catch (error) {
 				console.error('Error updating name:', error);
 				alert('Error updating name: ' + error.message);
+			} finally {
+				if (role === 'organization') {
+					fetchOrganizationUsers(selectedOrg);
+				}
 			}
 		} else {
 			alert('No user is currently signed in.');
@@ -133,6 +164,31 @@
 		} else {
 			alert('No user is currently signed in.');
 		}
+	}
+
+	async function fetchOrganizationDetails(orgId) {
+		const orgDoc = await getDoc(doc(db, 'organizations', orgId));
+		if (orgDoc.exists()) {
+			organizationDetails = {
+				id: orgDoc.id,
+				...orgDoc.data()
+			};
+		} else {
+			organizationDetails = null;
+			console.log('Organization not found.');
+		}
+	}
+
+	async function fetchOrganizationUsers(orgId) {
+		const membersSnapshot = await getDocs(collection(db, 'organizations', orgId, 'members'));
+		const userPromises = membersSnapshot.docs.map(async (memberDoc) => {
+			const userDoc = await getDoc(doc(db, 'users', memberDoc.id));
+			if (userDoc.exists()) {
+				return userDoc.data();
+			}
+		});
+		const users = await Promise.all(userPromises);
+		organizationUsers = users.filter((user) => user !== undefined); // Filter out undefined users
 	}
 </script>
 
@@ -392,11 +448,15 @@
 							<div>
 								<h5 class="mb-1 text-white font-weight-bolder">{displayName}</h5>
 								<p class="mb-0 text-white text-sm">
-									{role === 'student'
-										? 'Студент'
-										: role === 'organization'
-											? 'Организация'
-											: 'Неизвестно'}
+									{#if role === 'student'}
+										Студент
+									{/if}
+									{#if role === 'organization'}
+										Организация
+									{/if}
+									{#if role !== 'student' && role !== 'organization'}
+										Неизвестно
+									{/if}
 								</p>
 							</div>
 						</div>
@@ -407,7 +467,7 @@
 		</div>
 		<div class="container-fluid py-4">
 			<div class="row">
-				<div class="col-12 col-xl-4">
+				<div class="col-12 {role === 'organization' ? 'col-xl-4' : 'col-xl-6'} mb-5">
 					<div class="card h-100">
 						<div class="card-header pb-0 p-3">
 							<h6 class="mb-0">Настройки</h6>
@@ -538,7 +598,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-12 col-xl-4">
+				<div class="col-12 {role === 'organization' ? 'col-xl-4' : 'col-xl-6'} mb-5">
 					<div class="card h-100">
 						<div class="card-header pb-0 p-3">
 							<div class="row">
@@ -570,75 +630,29 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-12 col-xl-4">
-					<div class="card h-100">
-						<div class="card-header pb-0 p-3">
-							<h6 class="mb-0">Conversations</h6>
-						</div>
-						<div class="card-body p-3">
-							<ul class="list-group">
-								<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
-									<div class="avatar me-3">
-										<img
-											src="assets/img/kal-visuals-square.jpg"
-											alt="kal"
-											class="border-radius-lg shadow"
-										/>
-									</div>
-									<div class="d-flex align-items-start flex-column justify-content-center">
-										<h6 class="mb-0 text-sm">Sophie B.</h6>
-										<p class="mb-0 text-xs">Hi! I need more information..</p>
-									</div>
-									<a class="btn btn-link pe-3 ps-0 mb-0 ms-auto" href="javascript:;">Reply</a>
-								</li>
-								<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
-									<div class="avatar me-3">
-										<img src="assets/img/marie.jpg" alt="kal" class="border-radius-lg shadow" />
-									</div>
-									<div class="d-flex align-items-start flex-column justify-content-center">
-										<h6 class="mb-0 text-sm">Anne Marie</h6>
-										<p class="mb-0 text-xs">Awesome work, can you..</p>
-									</div>
-									<a class="btn btn-link pe-3 ps-0 mb-0 ms-auto" href="javascript:;">Reply</a>
-								</li>
-								<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
-									<div class="avatar me-3">
-										<img
-											src="assets/img/ivana-square.jpg"
-											alt="kal"
-											class="border-radius-lg shadow"
-										/>
-									</div>
-									<div class="d-flex align-items-start flex-column justify-content-center">
-										<h6 class="mb-0 text-sm">Ivanna</h6>
-										<p class="mb-0 text-xs">About files I can..</p>
-									</div>
-									<a class="btn btn-link pe-3 ps-0 mb-0 ms-auto" href="javascript:;">Reply</a>
-								</li>
-								<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
-									<div class="avatar me-3">
-										<img src="assets/img/team-4.jpg" alt="kal" class="border-radius-lg shadow" />
-									</div>
-									<div class="d-flex align-items-start flex-column justify-content-center">
-										<h6 class="mb-0 text-sm">Peterson</h6>
-										<p class="mb-0 text-xs">Have a great afternoon..</p>
-									</div>
-									<a class="btn btn-link pe-3 ps-0 mb-0 ms-auto" href="javascript:;">Reply</a>
-								</li>
-								<li class="list-group-item border-0 d-flex align-items-center px-0">
-									<div class="avatar me-3">
-										<img src="assets/img/team-3.jpg" alt="kal" class="border-radius-lg shadow" />
-									</div>
-									<div class="d-flex align-items-start flex-column justify-content-center">
-										<h6 class="mb-0 text-sm">Nick Daniel</h6>
-										<p class="mb-0 text-xs">Hi! I need more information..</p>
-									</div>
-									<a class="btn btn-link pe-3 ps-0 mb-0 ms-auto" href="javascript:;">Reply</a>
-								</li>
-							</ul>
+				{#if role === 'organization' && organizationDetails}
+					<div class="col-12 col-xl-4">
+						<div class="card h-100">
+							<div class="card-header pb-0 p-3">
+								<h6 class="mb-0">{organizationDetails.name}</h6>
+								<p>Основател: {organizationDetails.createdBy}</p>
+							</div>
+							<div class="card-body p-3">
+								<ul class="list-group">
+									{#each organizationUsers as user}
+										<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
+											<div class="d-flex align-items-start flex-column justify-content-center">
+												<h6 class="mb-0 text-sm">{user.displayName || 'Unknown User'}</h6>
+											</div>
+											<a class="btn btn-link pe-3 ps-0 mb-0 ms-auto" href="javascript:;">Reply</a>
+										</li>
+									{/each}
+								</ul>
+							</div>
 						</div>
 					</div>
-				</div>
+				{/if}
+
 				<!-- <div class="col-12 mt-4">
 					<div class="card mb-4">
 						<div class="card-header pb-0 p-3">
@@ -856,7 +870,7 @@
 						</div>
 					</div>
 				</div> 
-			</div>-->
+			</div> 
 				<footer class="footer pt-3">
 					<div class="container-fluid">
 						<div class="row align-items-center justify-content-lg-between">
@@ -892,25 +906,27 @@
 		</div>
 
 		<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-		<script src="assets/js/soft-ui-dashboard.min.js"></script>
+				<script src="assets/js/soft-ui-dashboard.min.js"></script>
 
-		<!--   Core JS Files   -->
-		<script src="assets/js/core/popper.min.js"></script>
-		<script src="assets/js/core/bootstrap.min.js"></script>
-		<script src="assets/js/plugins/perfect-scrollbar.min.js"></script>
-		<script src="assets/js/plugins/smooth-scrollbar.min.js"></script>
+				<!--   Core JS Files   -->
+				<script src="assets/js/core/popper.min.js"></script>
+				<script src="assets/js/core/bootstrap.min.js"></script>
+				<script src="assets/js/plugins/perfect-scrollbar.min.js"></script>
+				<script src="assets/js/plugins/smooth-scrollbar.min.js"></script>
 
-		<script>
-			var win = navigator.platform.indexOf('Win') > -1;
-			if (win && document.querySelector('#sidenav-scrollbar')) {
-				var options = {
-					damping: '0.5'
-				};
-				Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-			}
-		</script>
+				<script>
+					var win = navigator.platform.indexOf('Win') > -1;
+					if (win && document.querySelector('#sidenav-scrollbar')) {
+						var options = {
+							damping: '0.5'
+						};
+						Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+					}
+				</script>
 
-		<!-- Github buttons -->
-		<script async defer src="https://buttons.github.io/buttons.js"></script>
+				<!-- Github buttons -->
+				<script async defer src="https://buttons.github.io/buttons.js"></script>
+			</div>
+		</div>
 	</div></body
 >

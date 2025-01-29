@@ -50,7 +50,7 @@
 			await setDoc(doc(db, 'users', newUser.uid), { displayName, role: userRole });
 
 			alert(
-				`Registration successful! A verification email has been sent to ${email}. Please verify your email to continue.`
+				`Регистрацията успешна! Верификационене имейл бе изпратен до ${email}. Моля потвърдете вашият имейл за да продължите.`
 			);
 			goto('/verify-email');
 		} catch (error) {

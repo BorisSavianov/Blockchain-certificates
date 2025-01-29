@@ -8,6 +8,24 @@
 
 	let user = null;
 
+	let greeting = 'Loading...';
+
+	onMount(async () => {
+		fetchMessage();
+	});
+
+	async function fetchMessage() {
+		try {
+			greeting = 'Loading...';
+			const res = await fetch('/api/greet');
+			if (!res.ok) throw new Error('Failed to fetch');
+			const data = await res.json();
+			greeting = data.greeting;
+		} catch (error) {
+			greeting = 'Oops! Couldn’t fetch the greeting.';
+		}
+	}
+
 	let authSubscribe;
 
 	// Subscribe to authStore to track authentication state
@@ -23,7 +41,109 @@
 	// Cleanup the subscription on component destroy
 	onDestroy(unsubscribe);
 
-	onMount(async () => {
+	onMount(() => {
+		var ctx2 = document.getElementById('chart-line').getContext('2d');
+
+		var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
+
+		gradientStroke1.addColorStop(1, 'rgba(203,12,159,0.2)');
+		gradientStroke1.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+		gradientStroke1.addColorStop(0, 'rgba(203,12,159,0)'); //purple colors
+
+		var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
+
+		gradientStroke2.addColorStop(1, 'rgba(20,23,39,0.2)');
+		gradientStroke2.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+		gradientStroke2.addColorStop(0, 'rgba(20,23,39,0)'); //purple colors
+
+		new Chart(ctx2, {
+			type: 'line',
+			data: {
+				labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+				datasets: [
+					{
+						label: 'Mobile apps',
+						tension: 0.4,
+						borderWidth: 0,
+						pointRadius: 0,
+						borderColor: '#cb0c9f',
+						borderWidth: 3,
+						backgroundColor: gradientStroke1,
+						fill: true,
+						data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+						maxBarThickness: 6
+					},
+					{
+						label: 'Websites',
+						tension: 0.4,
+						borderWidth: 0,
+						pointRadius: 0,
+						borderColor: '#3A416F',
+						borderWidth: 3,
+						backgroundColor: gradientStroke2,
+						fill: true,
+						data: [30, 90, 40, 140, 290, 290, 340, 230, 400],
+						maxBarThickness: 6
+					}
+				]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						display: false
+					}
+				},
+				interaction: {
+					intersect: false,
+					mode: 'index'
+				},
+				scales: {
+					y: {
+						grid: {
+							drawBorder: false,
+							display: true,
+							drawOnChartArea: true,
+							drawTicks: false,
+							borderDash: [5, 5]
+						},
+						ticks: {
+							display: true,
+							padding: 10,
+							color: '#b2b9bf',
+							font: {
+								size: 11,
+								family: 'Inter',
+								style: 'normal',
+								lineHeight: 2
+							}
+						}
+					},
+					x: {
+						grid: {
+							drawBorder: false,
+							display: false,
+							drawOnChartArea: false,
+							drawTicks: false,
+							borderDash: [5, 5]
+						},
+						ticks: {
+							display: true,
+							color: '#b2b9bf',
+							padding: 20,
+							font: {
+								size: 11,
+								family: 'Inter',
+								style: 'normal',
+								lineHeight: 2
+							}
+						}
+					}
+				}
+			}
+		});
+
 		const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
 		const iconSidenav = document.getElementById('iconSidenav');
 		const sidenav = document.getElementById('sidenav-main');
@@ -31,7 +151,6 @@
 		let className = 'g-sidenav-pinned';
 
 		function toggleSidenav() {
-			console.log('Toggling sidenav');
 			if (innerBody.classList.contains(className)) {
 				innerBody.classList.remove(className);
 				setTimeout(() => {
@@ -105,7 +224,6 @@
 
 			if (trackerSnapshot.exists()) {
 				const data = trackerSnapshot.data();
-				console.log(data.issuedCertificates);
 				return data.issuedCertificates || 0; // Return the count or 0 if not present
 			} else {
 				return 0; // Return 0 if the document doesn't exist
@@ -407,7 +525,7 @@
 																aria-hidden="true"
 															></i>
 														</div>
-														<h5 class="text-white font-weight-bolder mb-0 mt-3">357</h5>
+														<h5 class="text-white font-weight-bolder mb-0 mt-3">5</h5>
 														<span class="text-white text-sm">Различни адреса</span>
 													</div>
 												</div>
@@ -430,8 +548,7 @@
 																aria-hidden="true"
 															></i>
 														</div>
-														<h5 class="text-white font-weight-bolder mb-0 mt-3">2300</h5>
-														<span class="text-white text-sm">Среден успех</span>
+														<p class="text-white font-weight-bolder mb-0 mt-3">gggg</p>
 													</div>
 												</div>
 											</div>
@@ -451,8 +568,8 @@
 																aria-hidden="true"
 															></i>
 														</div>
-														<h5 class="text-white font-weight-bolder mb-0 mt-3">940</h5>
-														<span class="text-white text-sm">нещо допълнително</span>
+														<h5 class="text-white font-weight-bolder mb-0 mt-3">Boris Savyanov</h5>
+														<span class="text-white text-sm">Най-много издавания</span>
 													</div>
 												</div>
 											</div>
@@ -464,84 +581,12 @@
 							<div class="col-lg-6 col-12 mt-4 mt-lg-0">
 								<div class="card shadow h-100">
 									<div class="card-header pb-0 p-3">
-										<h6 class="mb-0">Reviews</h6>
+										<h6 class="mb-0">Цитат</h6>
 									</div>
-									<div class="card-body pb-0 p-3">
-										<ul class="list-group">
-											<li class="list-group-item border-0 d-flex align-items-center px-0 mb-0">
-												<div class="w-100">
-													<div class="d-flex mb-2">
-														<span class="me-2 text-sm font-weight-bold text-dark"
-															>Positive Reviews</span
-														>
-														<span class="ms-auto text-sm font-weight-bold">80%</span>
-													</div>
-													<div>
-														<div class="progress progress-md">
-															<div
-																class="progress-bar bg-primary w-80"
-																role="progressbar"
-																aria-valuenow="60"
-																aria-valuemin="0"
-																aria-valuemax="100"
-															></div>
-														</div>
-													</div>
-												</div>
-											</li>
-											<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
-												<div class="w-100">
-													<div class="d-flex mb-2">
-														<span class="me-2 text-sm font-weight-bold text-dark"
-															>Neutral Reviews</span
-														>
-														<span class="ms-auto text-sm font-weight-bold">17%</span>
-													</div>
-													<div>
-														<div class="progress progress-md">
-															<div
-																class="progress-bar bg-primary w-10"
-																role="progressbar"
-																aria-valuenow="10"
-																aria-valuemin="0"
-																aria-valuemax="100"
-															></div>
-														</div>
-													</div>
-												</div>
-											</li>
-											<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
-												<div class="w-100">
-													<div class="d-flex mb-2">
-														<span class="me-2 text-sm font-weight-bold text-dark"
-															>Negative Reviews</span
-														>
-														<span class="ms-auto text-sm font-weight-bold">3%</span>
-													</div>
-													<div>
-														<div class="progress progress-md">
-															<div
-																class="progress-bar bg-primary w-5"
-																role="progressbar"
-																aria-valuenow="5"
-																aria-valuemin="0"
-																aria-valuemax="100"
-															></div>
-														</div>
-													</div>
-												</div>
-											</li>
-										</ul>
-									</div>
+									<div class="card-body pb-0 p-3"><h5 class="mb-0">{greeting}</h5></div>
 									<div class="card-footer pt-0 p-3 d-flex align-items-center">
-										<div class="w-60">
-											<p class="text-sm">
-												More than <b>1,500,000</b> developers used Creative Tim's products and over
-												<b>700,000</b> projects were created.
-											</p>
-										</div>
-										<div class="w-40 text-end">
-											<a class="btn btn-dark mb-0 text-end" href="">View all reviews</a>
+										<div>
+											<a class="btn btn-dark mb-0 text-end" on:click={fetchMessage}>Още</a>
 										</div>
 									</div>
 								</div>
@@ -619,13 +664,13 @@
 									</div>
 									<div class="card-body p-3">
 										<div class="chart">
-											<canvas id="chart-line" class="chart-canvas" height="300"></canvas>
+											<canvas id="chart-line" class="chart-canvas" height="340"></canvas>
 										</div>
 									</div>
 								</div>
 							</div>
-							<div class="col-lg-4 col-md-6">
-								<div class="card h-100">
+							<div class="col-lg-4">
+								<div class="card">
 									<div class="card-header pb-0">
 										<h6>Последно издадени сертификати</h6>
 										<div class="card-body p-3">
@@ -653,7 +698,7 @@
 							</div>
 						</div>
 
-						<div class="row mt-4">
+						<!-- <div class="row mt-4">
 							<div class="col-lg-5 mb-lg-0 mb-4">
 								<div class="card z-index-2">
 									<div class="card-body p-2">
@@ -887,7 +932,7 @@
 									</div>
 								</div>
 							</div>
-						</div>
+						</div> -->
 						<footer class="footer pt-3">
 							<div class="container-fluid">
 								<div class="row align-items-center justify-content-lg-between">
@@ -932,182 +977,75 @@
 					}
 				</script>
 
-				<!--   Core JS Files   -->
-				<script src="assets/js/core/popper.min.js"></script>
-				<script src="assets/js/core/bootstrap.min.js"></script>
-				<script src="assets/js/plugins/perfect-scrollbar.min.js"></script>
-				<script src="assets/js/plugins/smooth-scrollbar.min.js"></script>
-				<script src="assets/js/plugins/chartjs.min.js"></script>
 				<script>
-					var ctx = document.getElementById('chart-bars').getContext('2d');
+					// var canvas = document.getElementById('chart-bars');
+					// var ctx = canvas.getContext('2d');
 
-					new Chart(ctx, {
-						type: 'bar',
-						data: {
-							labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-							datasets: [
-								{
-									label: 'Sales',
-									tension: 0.4,
-									borderWidth: 0,
-									borderRadius: 4,
-									borderSkipped: false,
-									backgroundColor: '#fff',
-									data: [450, 200, 100, 220, 500, 100, 400, 230, 500],
-									maxBarThickness: 6
-								}
-							]
-						},
-						options: {
-							responsive: true,
-							maintainAspectRatio: false,
-							plugins: {
-								legend: {
-									display: false
-								}
-							},
-							interaction: {
-								intersect: false,
-								mode: 'index'
-							},
-							scales: {
-								y: {
-									grid: {
-										drawBorder: false,
-										display: false,
-										drawOnChartArea: false,
-										drawTicks: false
-									},
-									ticks: {
-										suggestedMin: 0,
-										suggestedMax: 500,
-										beginAtZero: true,
-										padding: 15,
-										font: {
-											size: 14,
-											family: 'Inter',
-											style: 'normal',
-											lineHeight: 2
-										},
-										color: '#fff'
-									}
-								},
-								x: {
-									grid: {
-										drawBorder: false,
-										display: false,
-										drawOnChartArea: false,
-										drawTicks: false
-									},
-									ticks: {
-										display: false
-									}
-								}
-							}
-						}
-					});
-
-					var ctx2 = document.getElementById('chart-line').getContext('2d');
-
-					var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
-
-					gradientStroke1.addColorStop(1, 'rgba(203,12,159,0.2)');
-					gradientStroke1.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-					gradientStroke1.addColorStop(0, 'rgba(203,12,159,0)'); //purple colors
-
-					var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
-
-					gradientStroke2.addColorStop(1, 'rgba(20,23,39,0.2)');
-					gradientStroke2.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-					gradientStroke2.addColorStop(0, 'rgba(20,23,39,0)'); //purple colors
-
-					new Chart(ctx2, {
-						type: 'line',
-						data: {
-							labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-							datasets: [
-								{
-									label: 'Mobile apps',
-									tension: 0.4,
-									borderWidth: 0,
-									pointRadius: 0,
-									borderColor: '#cb0c9f',
-									borderWidth: 3,
-									backgroundColor: gradientStroke1,
-									fill: true,
-									data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-									maxBarThickness: 6
-								},
-								{
-									label: 'Websites',
-									tension: 0.4,
-									borderWidth: 0,
-									pointRadius: 0,
-									borderColor: '#3A416F',
-									borderWidth: 3,
-									backgroundColor: gradientStroke2,
-									fill: true,
-									data: [30, 90, 40, 140, 290, 290, 340, 230, 400],
-									maxBarThickness: 6
-								}
-							]
-						},
-						options: {
-							responsive: true,
-							maintainAspectRatio: false,
-							plugins: {
-								legend: {
-									display: false
-								}
-							},
-							interaction: {
-								intersect: false,
-								mode: 'index'
-							},
-							scales: {
-								y: {
-									grid: {
-										drawBorder: false,
-										display: true,
-										drawOnChartArea: true,
-										drawTicks: false,
-										borderDash: [5, 5]
-									},
-									ticks: {
-										display: true,
-										padding: 10,
-										color: '#b2b9bf',
-										font: {
-											size: 11,
-											family: 'Inter',
-											style: 'normal',
-											lineHeight: 2
-										}
-									}
-								},
-								x: {
-									grid: {
-										drawBorder: false,
-										display: false,
-										drawOnChartArea: false,
-										drawTicks: false,
-										borderDash: [5, 5]
-									},
-									ticks: {
-										display: true,
-										color: '#b2b9bf',
-										padding: 20,
-										font: {
-											size: 11,
-											family: 'Inter',
-											style: 'normal',
-											lineHeight: 2
-										}
-									}
-								}
-							}
-						}
-					});
+					// new Chart(ctx, {
+					// 	type: 'bar',
+					// 	data: {
+					// 		labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+					// 		datasets: [
+					// 			{
+					// 				label: 'Sales',
+					// 				tension: 0.4,
+					// 				borderWidth: 0,
+					// 				borderRadius: 4,
+					// 				borderSkipped: false,
+					// 				backgroundColor: '#fff',
+					// 				data: [450, 200, 100, 220, 500, 100, 400, 230, 500],
+					// 				maxBarThickness: 6
+					// 			}
+					// 		]
+					// 	},
+					// 	options: {
+					// 		responsive: true,
+					// 		maintainAspectRatio: false,
+					// 		plugins: {
+					// 			legend: {
+					// 				display: false
+					// 			}
+					// 		},
+					// 		interaction: {
+					// 			intersect: false,
+					// 			mode: 'index'
+					// 		},
+					// 		scales: {
+					// 			y: {
+					// 				grid: {
+					// 					drawBorder: false,
+					// 					display: false,
+					// 					drawOnChartArea: false,
+					// 					drawTicks: false
+					// 				},
+					// 				ticks: {
+					// 					suggestedMin: 0,
+					// 					suggestedMax: 500,
+					// 					beginAtZero: true,
+					// 					padding: 15,
+					// 					font: {
+					// 						size: 14,
+					// 						family: 'Inter',
+					// 						style: 'normal',
+					// 						lineHeight: 2
+					// 					},
+					// 					color: '#fff'
+					// 				}
+					// 			},
+					// 			x: {
+					// 				grid: {
+					// 					drawBorder: false,
+					// 					display: false,
+					// 					drawOnChartArea: false,
+					// 					drawTicks: false
+					// 				},
+					// 				ticks: {
+					// 					display: false
+					// 				}
+					// 			}
+					// 		}
+					// 	}
+					// });
 				</script>
 				<script>
 					var win = navigator.platform.indexOf('Win') > -1;

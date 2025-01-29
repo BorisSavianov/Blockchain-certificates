@@ -55,7 +55,7 @@
 	import { ethers } from 'ethers';
 	import QRCode from 'qrcode';
 	import { PDFDocument, rgb } from 'pdf-lib'; // Import pdf-lib
-	import { rtdb } from '$lib/firebase';
+	import { rtdb, getDoc } from '$lib/firebase';
 	import { ref, set } from 'firebase/database';
 	import { auth } from '$lib/firebase';
 
@@ -67,10 +67,23 @@
 	let certificateStatus = ''; // This will store the status message
 	let certificateStatusMessage = ''; // This will hold the actual status text
 	let showStatus = false; // A flag to control the visibility of the status
+	let role;
 
-	auth.onAuthStateChanged((firebaseUser) => {
+	auth.onAuthStateChanged(async (firebaseUser) => {
 		user = firebaseUser;
 		if (user) {
+			// Fetch role from Firestore
+			const userDoc = doc(db, 'users', user.uid);
+			const docSnap = await getDoc(userDoc);
+			if (docSnap.exists()) {
+				role = docSnap.data().role || 'User';
+			} else {
+				console.log('No user role found in Firestore.');
+			}
+			if (role === 'student') {
+				goto('/');
+			}
+
 			loadBlanks(); // Load blanks when the user logs in
 			loadCertificates();
 		}
@@ -89,6 +102,16 @@
 	function isValidDate(date) {
 		const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 		return datePattern.test(date);
+	}
+
+	function formatDate(event) {
+		let input = event.target.value.replace(/\D/g, ''); // Remove non-digit characters
+		if (input.length > 4 && input.length <= 6) {
+			input = input.slice(0, 4) + '-' + input.slice(4);
+		} else if (input.length > 6) {
+			input = input.slice(0, 4) + '-' + input.slice(4, 6) + '-' + input.slice(6, 8);
+		}
+		dateIssued = input;
 	}
 
 	// Function to sign certificate details
@@ -455,14 +478,6 @@
 	const clearCanvas = () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	};
-
-	const saveCanvas = () => {
-		const dataURL = canvas.toDataURL('image/png');
-		const link = document.createElement('a');
-		link.href = dataURL;
-		link.download = 'drawing.png';
-		link.click();
-	};
 </script>
 
 <html lang="en">
@@ -765,7 +780,23 @@
 														type="text"
 														bind:value={dateIssued}
 														placeholder="Дата (ГГГГ-ММ-ДД)"
+														on:input={formatDate}
+														maxlength="10"
 													/>
+												</div>
+											</div>
+											<div class="container">
+												<div class="drawing-board">
+													<canvas
+														id="drawing-board"
+														on:mousedown={startDrawing}
+														on:mouseup={stopDrawing}
+														on:mousemove={draw}
+													>
+													</canvas>
+												</div>
+												<div id="toolbar">
+													<button on:click={clearCanvas}>Изчисти</button>
 												</div>
 											</div>
 										</div>
@@ -840,22 +871,8 @@
 							</div>
 						</div>
 					</div>
-					<div class="container">
-						<div id="toolbar">
-							<button on:click={clearCanvas}>Clear</button>
-							<button on:click={saveCanvas}>Save</button>
-						</div>
-						<div class="drawing-board">
-							<canvas
-								id="drawing-board"
-								on:mousedown={startDrawing}
-								on:mouseup={stopDrawing}
-								on:mousemove={draw}
-							></canvas>
-						</div>
-					</div>
 				</div>
-				<div class="row">
+				<!-- <div class="row">
 					<div class="col-md-5 mt-4">
 						<div class="card h-100 mb-4">
 							<div class="card-header pb-0 px-3">
@@ -991,7 +1008,7 @@
 							</div>
 						</div>
 					</div>
-				</div>
+				</div> -->
 				<footer class="footer pt-3">
 					<div class="container-fluid">
 						<div class="row align-items-center justify-content-lg-between">

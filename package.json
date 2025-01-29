@@ -29,6 +29,9 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@pdfme/common": "^5.2.14",
+		"@pdfme/generator": "^5.2.14",
+		"@pdfme/ui": "^5.2.14",
 		"@sveltejs/adapter-vercel": "^5.4.7",
 		"dotenv": "^16.4.5",
 		"firebase": "^10.12.4",
