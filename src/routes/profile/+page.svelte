@@ -190,6 +190,27 @@
 		const users = await Promise.all(userPromises);
 		organizationUsers = users.filter((user) => user !== undefined); // Filter out undefined users
 	}
+
+	import { writable } from 'svelte/store';
+
+	let params = '';
+	let greeting = writable('');
+
+	async function fetchMessage() {
+		try {
+			console.log(params);
+			greeting.set('Loading...');
+			console.log(1);
+			const res = await fetch(`/api/description?params=${encodeURIComponent(params)}`);
+			console.log(2);
+			if (!res.ok) throw new Error('Failed to fetch');
+
+			const data = await res.json();
+			greeting.set(data.greeting || 'No greeting found');
+		} catch (error) {
+			greeting.set('Oops! Couldn’t fetch the greeting.');
+		}
+	}
 </script>
 
 <head>
