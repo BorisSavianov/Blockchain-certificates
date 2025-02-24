@@ -25,6 +25,9 @@ node_modules
 /src/routes/api/image
 /src/lib/imageGenerator.js
 /src/routes/image-gen
+/src/routes/api/description
+/src/routes/api/greet
+
 
 # Hardhat files
 /cache

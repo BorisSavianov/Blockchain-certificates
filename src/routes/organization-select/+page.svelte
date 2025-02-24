@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { auth, db } from '$lib/firebase'; // Adjust the path as needed
+	import { auth, db } from '$lib/firebase';
 	import {
 		collection,
 		getDocs,
@@ -17,6 +17,7 @@
 	let selectedOrg;
 	let newOrgName = '';
 	let organizationDetails = null;
+	let membershipRequests = [];
 
 	onMount(async () => {
 		const user = auth.currentUser;
@@ -46,20 +47,11 @@
 	async function selectOrganization(orgId) {
 		const user = auth.currentUser;
 		if (user) {
-			await updateDoc(doc(db, 'users', user.uid), {
-				selectedOrg: orgId
+			await setDoc(doc(db, 'organizations', orgId, 'requests', user.uid), {
+				uid: user.uid
 			});
-
-			await addUserToOrganization(orgId, user.uid);
-			selectedOrg = orgId; // Update local state
-			await fetchOrganization(orgId);
+			alert('Request sent to join the organization. Wait for approval.');
 		}
-	}
-
-	async function addUserToOrganization(orgId, userId) {
-		await setDoc(doc(db, 'organizations', orgId, 'members', userId), {
-			uid: userId
-		});
 	}
 
 	async function fetchOrganization(orgId) {
@@ -69,22 +61,34 @@
 				id: orgDoc.id,
 				...orgDoc.data()
 			};
+			await loadMembershipRequests(orgId);
 		} else {
 			organizationDetails = null;
-			console.log('Organization not found.');
 		}
 	}
 
-	async function addOrganization() {
-		const user = auth.currentUser;
-		if (user && newOrgName.trim() !== '') {
-			await addDoc(collection(db, 'organizations'), {
-				name: newOrgName,
-				createdBy: user.uid
-			});
-			newOrgName = '';
-			await loadOrganizations();
-		}
+	async function loadMembershipRequests(orgId) {
+		const requestsSnapshot = await getDocs(collection(db, 'organizations', orgId, 'requests'));
+		membershipRequests = requestsSnapshot.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data()
+		}));
+	}
+
+	async function approveMember(orgId, userId) {
+		await setDoc(doc(db, 'organizations', orgId, 'members', userId), { uid: userId });
+		await addDoc(doc(db, 'users', userId), { selectedOrg: orgId });
+		await deleteDoc(doc(db, 'organizations', orgId, 'requests', userId));
+		await loadMembershipRequests(orgId);
+	}
+
+	async function denyRequest(orgId, userId) {
+		await deleteDoc(doc(db, 'organizations', orgId, 'requests', userId));
+		await loadMembershipRequests(orgId);
+	}
+
+	async function removeMember(orgId, userId) {
+		await deleteDoc(doc(db, 'organizations', orgId, 'members', userId));
 	}
 
 	async function deleteOrganization(orgId) {
@@ -97,28 +101,30 @@
 			}
 		}
 	}
-
-	async function quitOrganization() {
-		const user = auth.currentUser;
-		if (user) {
-			await updateDoc(doc(db, 'users', user.uid), {
-				selectedOrg: null
-			});
-			await deleteDoc(doc(db, 'organizations', selectedOrg, 'members', user.uid));
-			selectedOrg = null; // Update local state
-			organizationDetails = null; // Clear organization details
-			await loadOrganizations();
-		}
-	}
 </script>
 
+{auth.currentUser.uid}
 {#if selectedOrg}
 	<h1>Your Selected Organization</h1>
 	{#if organizationDetails}
 		<p>Organization Name: {organizationDetails.name}</p>
 		<p>Organization ID: {organizationDetails.id}</p>
+		{#if organizationDetails.createdBy === auth.currentUser?.uid}
+			<h2>Membership Requests</h2>
+			<ul>
+				{#each membershipRequests as request}
+					<li>
+						User ID: {request.uid}
+						<button on:click={() => approveMember(selectedOrg, request.uid)}>Approve</button>
+						<button on:click={() => denyRequest(selectedOrg, request.uid)}>Deny</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	{/if}
-	<button on:click={quitOrganization}>Quit Organization</button>
+	<button on:click={() => removeMember(selectedOrg, auth.currentUser?.uid)}
+		>Leave Organization</button
+	>
 {:else}
 	<h1>Select Your Organization</h1>
 	{#if organizations.length}
@@ -126,7 +132,7 @@
 			{#each organizations as org}
 				<li>
 					<span>{org.name}</span>
-					<button on:click={() => selectOrganization(org.id)}>Select</button>
+					<button on:click={() => selectOrganization(org.id)}>Request to Join</button>
 					{#if org.createdBy === auth.currentUser?.uid}
 						<button on:click={() => deleteOrganization(org.id)}>Delete</button>
 					{/if}
@@ -138,7 +144,22 @@
 	{/if}
 
 	<h2>Add a New Organization</h2>
-	<form on:submit|preventDefault={addOrganization}>
+	<form
+		on:submit|preventDefault={async () => {
+			const user = auth.currentUser;
+			if (user && newOrgName.trim() !== '') {
+				const orgRef = await addDoc(collection(db, 'organizations'), {
+					name: newOrgName,
+					createdBy: user.uid
+				});
+				await setDoc(doc(db, 'organizations', orgRef.id, 'members', user.uid), { uid: user.uid });
+				await updateDoc(doc(db, 'users', user.uid), { selectedOrg: orgRef.id });
+				selectedOrg = orgRef.id;
+				newOrgName = '';
+				await loadOrganizations();
+			}
+		}}
+	>
 		<input type="text" bind:value={newOrgName} placeholder="Organization Name" required />
 		<button type="submit">Add Organization</button>
 	</form>

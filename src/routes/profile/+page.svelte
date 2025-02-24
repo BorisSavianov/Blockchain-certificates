@@ -191,24 +191,16 @@
 		organizationUsers = users.filter((user) => user !== undefined); // Filter out undefined users
 	}
 
-	import { writable } from 'svelte/store';
-
-	let params = '';
-	let greeting = writable('');
-
-	async function fetchMessage() {
-		try {
-			console.log(params);
-			greeting.set('Loading...');
-			console.log(1);
-			const res = await fetch(`/api/description?params=${encodeURIComponent(params)}`);
-			console.log(2);
-			if (!res.ok) throw new Error('Failed to fetch');
-
-			const data = await res.json();
-			greeting.set(data.greeting || 'No greeting found');
-		} catch (error) {
-			greeting.set('Oops! Couldn’t fetch the greeting.');
+	async function quitOrganization() {
+		const user = auth.currentUser;
+		if (user) {
+			await updateDoc(doc(db, 'users', user.uid), {
+				selectedOrg: null
+			});
+			await deleteDoc(doc(db, 'organizations', selectedOrg, 'members', user.uid));
+			selectedOrg = null; // Update local state
+			organizationDetails = null; // Clear organization details
+			await loadOrganizations();
 		}
 	}
 </script>
@@ -657,6 +649,9 @@
 							<div class="card-header pb-0 p-3">
 								<h6 class="mb-0">{organizationDetails.name}</h6>
 								<p>Основател: {organizationDetails.createdBy}</p>
+								<button class="btn btn-danger" on:click={quitOrganization}
+									>Излез от организация</button
+								>
 							</div>
 							<div class="card-body p-3">
 								<ul class="list-group">
@@ -669,6 +664,18 @@
 										</li>
 									{/each}
 								</ul>
+							</div>
+						</div>
+					</div>
+				{/if}
+				{#if role === 'organization' && !organizationDetails}
+					<div class="col-12 col-xl-4">
+						<div class="card h-100">
+							<div class="card-header pb-0 p-3">
+								<h6 class="mb-0">Влез в организация</h6>
+							</div>
+							<div class="card-body p-3">
+								<button class="btn btn-primary" href="/organization-select">Намери</button>
 							</div>
 						</div>
 					</div>
