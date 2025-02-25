@@ -20,6 +20,7 @@
 	let selectedOrg = '';
 	let organizationDetails = null;
 	let organizationUsers = [];
+	let orgFounder;
 
 	onMount(async () => {
 		const user = auth.currentUser;
@@ -42,6 +43,7 @@
 				if (selectedOrg) {
 					await fetchOrganizationDetails(selectedOrg);
 					await fetchOrganizationUsers(selectedOrg);
+					orgFounder = await fetchOrganizationFounder(selectedOrg);
 				}
 			} else {
 				console.log('No user role found in Firestore.');
@@ -184,7 +186,7 @@
 		const userPromises = membersSnapshot.docs.map(async (memberDoc) => {
 			const userDoc = await getDoc(doc(db, 'users', memberDoc.id));
 			if (userDoc.exists()) {
-				return userDoc.data();
+				return { uid: memberDoc.id, ...userDoc.data() }; // Include the UID
 			}
 		});
 		const users = await Promise.all(userPromises);
@@ -202,6 +204,31 @@
 			organizationDetails = null; // Clear organization details
 			await loadOrganizations();
 		}
+	}
+
+	async function fetchOrganizationFounder(orgId) {
+		const orgDoc = await getDoc(doc(db, 'organizations', orgId));
+		if (orgDoc.exists()) {
+			const orgData = orgDoc.data();
+
+			let founderName = 'Unknown';
+			if (orgData.createdBy) {
+				const founderDoc = await getDoc(doc(db, 'users', orgData.createdBy));
+				if (founderDoc.exists()) {
+					founderName = founderDoc.data().displayName || 'Unknown';
+				}
+			}
+			return founderName;
+		}
+	}
+
+	async function removeMember(orgId, userId) {
+		await deleteDoc(doc(db, 'organizations', orgId, 'members', userId));
+		await updateDoc(doc(db, 'users', userId), { selectedOrg: null });
+	}
+
+	function isFounder() {
+		return organizationDetails?.createdBy === auth.currentUser?.uid;
 	}
 </script>
 
@@ -648,22 +675,28 @@
 						<div class="card h-100">
 							<div class="card-header pb-0 p-3">
 								<h6 class="mb-0">{organizationDetails.name}</h6>
-								<p>Основател: {organizationDetails.createdBy}</p>
-								<button class="btn btn-danger" on:click={quitOrganization}
-									>Излез от организация</button
-								>
+								<p>Основател: {orgFounder}</p>
 							</div>
 							<div class="card-body p-3">
+								<h5>Членове</h5>
 								<ul class="list-group">
 									{#each organizationUsers as user}
 										<li class="list-group-item border-0 d-flex align-items-center px-0 mb-2">
 											<div class="d-flex align-items-start flex-column justify-content-center">
 												<h6 class="mb-0 text-sm">{user.displayName || 'Unknown User'}</h6>
 											</div>
-											<a class="btn btn-link pe-3 ps-0 mb-0 ms-auto" href="javascript:;">Reply</a>
+											{#if isFounder()}
+												<button
+													class="btn btn-link pe-3 ps-0 mb-0 ms-auto"
+													on:click={() => removeMember(selectedOrg, user.uid)}>Премахни</button
+												>
+											{/if}
 										</li>
 									{/each}
 								</ul>
+								<button class="btn btn-danger" on:click={quitOrganization}
+									>Излез от организация</button
+								>
 							</div>
 						</div>
 					</div>

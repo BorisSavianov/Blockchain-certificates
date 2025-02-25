@@ -77,7 +77,7 @@
 
 	async function approveMember(orgId, userId) {
 		await setDoc(doc(db, 'organizations', orgId, 'members', userId), { uid: userId });
-		await addDoc(doc(db, 'users', userId), { selectedOrg: orgId });
+		await updateDoc(doc(db, 'users', userId), { selectedOrg: orgId });
 		await deleteDoc(doc(db, 'organizations', orgId, 'requests', userId));
 		await loadMembershipRequests(orgId);
 	}
@@ -103,7 +103,6 @@
 	}
 </script>
 
-{auth.currentUser.uid}
 {#if selectedOrg}
 	<h1>Your Selected Organization</h1>
 	{#if organizationDetails}

@@ -132,12 +132,13 @@
 	}
 
 	async function generateCertificatePDF(
-		studentAddress,
+		organizationName,
 		courseName,
 		studentName,
 		email,
 		dateIssued,
-		drawingUrl
+		drawingUrl,
+		studentAddress
 	) {
 		// Зареждане на оригиналния PDF
 		const existingPdfBytes = await fetch('proba.pdf').then((res) => res.arrayBuffer());
@@ -150,7 +151,7 @@
 		const replacements = [
 			{ text: courseName, x: 320, y: 400, size: 58 },
 			{ text: studentName, x: 330, y: 290, size: 24 },
-			{ text: studentAddress, x: 240, y: 230, size: 12 },
+			{ text: organizationName, x: 240, y: 230, size: 12 },
 			{ text: dateIssued, x: 500, y: 150, size: 12 }
 		];
 
@@ -168,16 +169,15 @@
 		const drawingImage = await pdfDoc.embedPng(drawingUrl);
 
 		// Постави рисунката в PDF на зададената позиция
-		// Променени са координатите и размерите на изображението, за да не е сплескано
 		page.drawImage(drawingImage, {
-			x: 120, // Позиция по x
-			y: 130, // Позиция по y
-			width: 200, // Ширина на изображението
-			height: 120 // Височина на изображението, коригирана, за да изглежда правилно
+			x: 120,
+			y: 130,
+			width: 200,
+			height: 120
 		});
 
 		// Генерирай QR код
-		const qrCodeUrl = `http://localhost:5173/verificiraj?address=${studentAddress}`;
+		const qrCodeUrl = `http://localhost:5173/verificiraj?organization=${studentAddress}`;
 		const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUrl);
 		const qrImage = await pdfDoc.embedPng(qrCodeDataUrl);
 
@@ -196,7 +196,7 @@
 		const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 		const link = document.createElement('a');
 		link.href = URL.createObjectURL(blob);
-		link.download = 'updated_certificate.pdf';
+		link.download = 'certificate.pdf';
 		link.click();
 	}
 
@@ -278,14 +278,17 @@
 			// Save the issued certificate details along with the issuer's Ethereum address
 			await saveIssuedCertificate(courseName, studentName, dateIssued, signature);
 
+			const organizationName = await getOrganizationName(user.uid);
+
 			// Generate the certificate PDF
 			await generateCertificatePDF(
-				studentAddress,
+				organizationName,
 				courseName,
 				studentName,
 				user.email,
 				dateIssued,
-				drawingUrl
+				drawingUrl,
+				studentAddress
 			);
 
 			// Update issued certificates count for the user
@@ -304,6 +307,22 @@
 			showStatus = true;
 			await saveCertificateStatusToDB(studentAddress, certificateStatus);
 		}
+	}
+
+	async function getOrganizationName(userId) {
+		try {
+			const userDoc = await getDoc(doc(db, 'users', userId));
+			if (userDoc.exists() && userDoc.data().selectedOrg) {
+				const orgId = userDoc.data().selectedOrg;
+				const orgDoc = await getDoc(doc(db, 'organizations', orgId));
+				if (orgDoc.exists()) {
+					return orgDoc.data().name;
+				}
+			}
+		} catch (error) {
+			console.error('Error fetching organization name:', error);
+		}
+		return 'Unknown Organization';
 	}
 
 	import { increment, setDoc, doc, collection } from 'firebase/firestore';
@@ -1009,7 +1028,7 @@
 						</div>
 					</div>
 				</div> -->
-				<footer class="footer pt-3">
+				<!-- <footer class="footer pt-3">
 					<div class="container-fluid">
 						<div class="row align-items-center justify-content-lg-between">
 							<div class="col-lg-6">
@@ -1039,7 +1058,7 @@
 							</div>
 						</div>
 					</div>
-				</footer>
+				</footer> -->
 			</div>
 		</main>
 

@@ -3,12 +3,13 @@
 	import { authStore } from '$lib/stores/authStore.js';
 	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-
 	import { auth } from '$lib/firebase';
+	import { getDoc } from 'firebase/firestore';
 
+	let issuedCertificatesCount = 0;
 	let user = null;
-
 	let greeting = 'Loading...';
+	let selectedOrg;
 
 	onMount(async () => {
 		fetchMessage();
@@ -41,48 +42,142 @@
 	// Cleanup the subscription on component destroy
 	onDestroy(unsubscribe);
 
-	onMount(() => {
-		var ctx2 = document.getElementById('chart-line').getContext('2d');
+	import { where } from 'firebase/firestore';
 
-		var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
+	async function fetchCertificateData(onlyTracker = false) {
+		const userId = auth.currentUser?.uid;
+		if (!userId) return onlyTracker ? 0 : { labels: [], data: [] };
 
-		gradientStroke1.addColorStop(1, 'rgba(203,12,159,0.2)');
-		gradientStroke1.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-		gradientStroke1.addColorStop(0, 'rgba(203,12,159,0)'); //purple colors
+		// Reference to the tracker document
+		const trackerRef = doc(db, 'users', userId, 'certificates', 'tracker');
+		const trackerSnapshot = await getDoc(trackerRef);
 
-		var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
+		// If onlyTracker is true, return the issuedCertificates count from the tracker doc
+		if (onlyTracker) {
+			return trackerSnapshot.exists() ? trackerSnapshot.data().issuedCertificates || 0 : 0;
+		}
 
-		gradientStroke2.addColorStop(1, 'rgba(20,23,39,0.2)');
-		gradientStroke2.addColorStop(0.2, 'rgba(72,72,176,0.0)');
-		gradientStroke2.addColorStop(0, 'rgba(20,23,39,0)'); //purple colors
+		// Fetch issued certificates for the last 5 days (excluding 'tracker' document)
+		const certificateCounts = {};
+		const today = new Date();
+
+		// Initialize the last 5 days with 0 counts
+		for (let i = 0; i < 5; i++) {
+			const date = new Date();
+			date.setDate(today.getDate() - i);
+			const formattedDate = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+			certificateCounts[formattedDate] = 0;
+		}
+
+		// Query Firestore for user's certificates (excluding 'tracker')
+		const startDate = new Date();
+		startDate.setDate(today.getDate() - 5); // Go 5 days back
+		const certificatesRef = collection(db, 'users', userId, 'certificates');
+		const q = query(certificatesRef, where('dateIssued', '>=', startDate.toISOString()));
+
+		const snapshot = await getDocs(q);
+		snapshot.forEach((doc) => {
+			if (doc.id !== 'tracker') {
+				// Exclude 'tracker' document
+				const data = doc.data();
+				const issuedDate = data.dateIssued.split('T')[0]; // Extract YYYY-MM-DD
+				if (certificateCounts[issuedDate] !== undefined) {
+					certificateCounts[issuedDate]++; // Increment count
+				}
+			}
+		});
+
+		// Convert the results to sorted arrays
+		const labels = Object.keys(certificateCounts).sort(); // Sorted dates
+		const data = labels.map((date) => certificateCounts[date]); // Corresponding counts
+
+		return { labels, data };
+	}
+
+	let uniqueStudentCount = 0;
+	let joinRequestsCount = 0;
+
+	onMount(async () => {
+		try {
+			auth.onAuthStateChanged(async (firebaseUser) => {
+				user = firebaseUser;
+				if (user) {
+					loadCertificates();
+					issuedCertificatesCount = await fetchCertificateData(true);
+
+					// Fetch role and selected organization from Firestore
+					const userDoc = doc(db, 'users', user.uid);
+					const docSnap = await getDoc(userDoc);
+					if (docSnap.exists()) {
+						const userData = docSnap.data();
+						selectedOrg = userData.selectedOrg || null;
+
+						// Now that selectedOrg is set, fetch join requests count
+						if (selectedOrg) {
+							joinRequestsCount = await fetchJoinRequestsCount(selectedOrg);
+						}
+					}
+
+					// Fetch unique student count (which only needs user ID)
+					const userId = auth.currentUser.uid;
+					uniqueStudentCount = await fetchUniqueStudentCount(userId);
+				}
+			});
+		} catch (error) {
+			console.error('Error fetching unique student count or join requests:', error);
+		}
+	});
+
+	async function fetchJoinRequestsCount(orgId) {
+		const requestsRef = collection(db, 'organizations', orgId, 'requests');
+		const snapshot = await getDocs(requestsRef);
+
+		return snapshot.size; // Number of join requests
+	}
+
+	async function fetchUniqueStudentCount(userId) {
+		const certificatesRef = collection(db, 'users', userId, 'certificates');
+		const snapshot = await getDocs(certificatesRef);
+
+		const uniqueStudents = new Set();
+
+		snapshot.forEach((doc) => {
+			if (doc.id !== 'tracker') {
+				// Exclude the tracker doc
+				const data = doc.data();
+				if (data.studentName) {
+					uniqueStudents.add(data.studentName);
+				}
+			}
+		});
+
+		return uniqueStudents.size; // Return the count of unique student names
+	}
+
+	onMount(async () => {
+		const ctx2 = document.getElementById('chart-line').getContext('2d');
+
+		const { labels, data } = await fetchCertificateData(false);
+
+		const gradientStroke = ctx2.createLinearGradient(0, 230, 0, 50);
+		gradientStroke.addColorStop(1, 'rgba(203,12,159,0.2)');
+		gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+		gradientStroke.addColorStop(0, 'rgba(203,12,159,0)');
 
 		new Chart(ctx2, {
 			type: 'line',
 			data: {
-				labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+				labels,
 				datasets: [
 					{
-						label: 'Mobile apps',
+						label: 'Издадени сертификати',
 						tension: 0.4,
-						borderWidth: 0,
-						pointRadius: 0,
+						borderWidth: 3,
+						pointRadius: 5,
 						borderColor: '#cb0c9f',
-						borderWidth: 3,
-						backgroundColor: gradientStroke1,
+						backgroundColor: gradientStroke,
 						fill: true,
-						data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-						maxBarThickness: 6
-					},
-					{
-						label: 'Websites',
-						tension: 0.4,
-						borderWidth: 0,
-						pointRadius: 0,
-						borderColor: '#3A416F',
-						borderWidth: 3,
-						backgroundColor: gradientStroke2,
-						fill: true,
-						data: [30, 90, 40, 140, 290, 290, 340, 230, 400],
+						data,
 						maxBarThickness: 6
 					}
 				]
@@ -92,52 +187,30 @@
 				maintainAspectRatio: false,
 				plugins: {
 					legend: {
-						display: false
+						display: true
 					}
-				},
-				interaction: {
-					intersect: false,
-					mode: 'index'
 				},
 				scales: {
 					y: {
 						grid: {
 							drawBorder: false,
 							display: true,
-							drawOnChartArea: true,
-							drawTicks: false,
 							borderDash: [5, 5]
 						},
 						ticks: {
-							display: true,
-							padding: 10,
 							color: '#b2b9bf',
-							font: {
-								size: 11,
-								family: 'Inter',
-								style: 'normal',
-								lineHeight: 2
-							}
+							font: { size: 11, family: 'Inter' }
 						}
 					},
 					x: {
 						grid: {
 							drawBorder: false,
 							display: false,
-							drawOnChartArea: false,
-							drawTicks: false,
 							borderDash: [5, 5]
 						},
 						ticks: {
-							display: true,
 							color: '#b2b9bf',
-							padding: 20,
-							font: {
-								size: 11,
-								family: 'Inter',
-								style: 'normal',
-								lineHeight: 2
-							}
+							font: { size: 11, family: 'Inter' }
 						}
 					}
 				}
@@ -175,14 +248,6 @@
 		};
 	});
 
-	auth.onAuthStateChanged(async (firebaseUser) => {
-		user = firebaseUser;
-		if (user) {
-			loadCertificates();
-			issuedCertificatesCount = await fetchIssuedCertificatesCount(user.uid);
-		}
-	});
-
 	let certificates = [];
 
 	import {
@@ -206,32 +271,6 @@
 		const q = query(certificatesRef, orderBy('createdAt', 'desc'), limit(6));
 		const snapshot = await getDocs(q);
 		certificates = snapshot.docs.map((doc) => doc.data());
-	}
-
-	import { getDoc } from 'firebase/firestore';
-	let issuedCertificatesCount = 0;
-	// Function to fetch the issued certificates count for a specific user
-	async function fetchIssuedCertificatesCount(userUid) {
-		try {
-			const userRef = doc(collection(db, 'users'), userUid);
-			const certificatesRef = collection(userRef, 'certificates');
-
-			// Document to track the count of issued certificates
-			const trackerDoc = doc(certificatesRef, 'tracker');
-
-			// Fetch the document
-			const trackerSnapshot = await getDoc(trackerDoc);
-
-			if (trackerSnapshot.exists()) {
-				const data = trackerSnapshot.data();
-				return data.issuedCertificates || 0; // Return the count or 0 if not present
-			} else {
-				return 0; // Return 0 if the document doesn't exist
-			}
-		} catch (error) {
-			console.error('Error fetching issued certificates count:', error);
-			return 0; // Return 0 in case of an error
-		}
 	}
 </script>
 
@@ -525,8 +564,10 @@
 																aria-hidden="true"
 															></i>
 														</div>
-														<h5 class="text-white font-weight-bolder mb-0 mt-3">5</h5>
-														<span class="text-white text-sm">Различни адреса</span>
+														<h5 class="text-white font-weight-bolder mb-0 mt-3">
+															{uniqueStudentCount}
+														</h5>
+														<span class="text-white text-sm">Различни студента</span>
 													</div>
 												</div>
 											</div>
@@ -534,7 +575,7 @@
 									</div>
 								</div>
 								<div class="row mt-4">
-									<div class="col-lg-6 col-md-6 col-12">
+									<div class="col-lg-6 col-md-6 col-12 mt-4 mt-md-0">
 										<div class="card">
 											<span class="mask bg-dark opacity-10 border-radius-lg"></span>
 											<div class="card-body p-3 position-relative">
@@ -544,16 +585,20 @@
 															class="icon icon-shape bg-white shadow text-center border-radius-2xl"
 														>
 															<i
-																class="ni ni-cart text-dark text-gradient text-lg opacity-10"
+																class="ni ni-email-83 text-dark text-gradient text-lg opacity-10"
 																aria-hidden="true"
 															></i>
 														</div>
-														<p class="text-white font-weight-bolder mb-0 mt-3">gggg</p>
+														<h5 class="text-white font-weight-bolder mb-0 mt-3">
+															{joinRequestsCount}
+														</h5>
+														<span class="text-white text-sm">Заявки за включване</span>
 													</div>
 												</div>
 											</div>
 										</div>
 									</div>
+
 									<div class="col-lg-6 col-md-6 col-12 mt-4 mt-md-0">
 										<div class="card">
 											<span class="mask bg-dark opacity-10 border-radius-lg"></span>
@@ -631,8 +676,7 @@
 							<div class="col-lg-5">
 								<div class="card h-100 p-3">
 									<div
-										class="overflow-hidden position-relative border-radius-lg bg-cover h-100"
-										style="background-image: url('assets/img/ivancik.jpg');"
+										class="overflow-hidden bg-dark position-relative border-radius-lg bg-cover h-100"
 									>
 										<span class="mask bg-gradient-dark"></span>
 										<div class="card-body position-relative z-index-1 d-flex flex-column h-100 p-3">
@@ -656,11 +700,7 @@
 							<div class="col-lg-7">
 								<div class="card z-index-2">
 									<div class="card-header pb-0">
-										<h6>Sales overview</h6>
-										<p class="text-sm">
-											<i class="fa fa-arrow-up text-success"></i>
-											<span class="font-weight-bold">4% more</span> in 2021
-										</p>
+										<h6>Графика на издаване</h6>
 									</div>
 									<div class="card-body p-3">
 										<div class="chart">
@@ -933,7 +973,7 @@
 								</div>
 							</div>
 						</div> -->
-						<footer class="footer pt-3">
+						<!-- <footer class="footer pt-3">
 							<div class="container-fluid">
 								<div class="row align-items-center justify-content-lg-between">
 									<div class="col-lg-6">
@@ -963,7 +1003,7 @@
 									</div>
 								</div>
 							</div>
-						</footer>
+						</footer> -->
 					</div>
 				</main>
 

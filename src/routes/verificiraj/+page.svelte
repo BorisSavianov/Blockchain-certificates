@@ -242,13 +242,14 @@
 
 	import { auth } from '$lib/firebase';
 	let user = null;
+	let organizationName;
 	onMount(async () => {
 		isLoading = true;
 
 		try {
 			// Get the current user from Firebase Authentication
 			user = auth.currentUser;
-
+			organizationName = await getOrganizationName(user.uid);
 			if (!user) {
 				errorMessage = 'User is not logged in.';
 				return;
@@ -296,7 +297,14 @@
 
 	import QRCode from 'qrcode';
 	import { PDFDocument, rgb } from 'pdf-lib'; // Import pdf-lib
-	async function updatePdf(studentName, courseName, studentAddress, dateIssued, certificateId) {
+	async function updatePdf(
+		studentName,
+		courseName,
+		studentAddress,
+		dateIssued,
+		certificateId,
+		organizationName
+	) {
 		// Fetch the drawing URL
 		const drawingUrl = await getDrawingUrl(certificateId);
 		if (!drawingUrl) {
@@ -314,7 +322,7 @@
 		const replacements = [
 			{ text: courseName, x: 320, y: 400, size: 58 },
 			{ text: studentName, x: 330, y: 290, size: 24 },
-			{ text: studentAddress, x: 240, y: 230, size: 12 },
+			{ text: organizationName, x: 240, y: 230, size: 12 },
 			{ text: dateIssued, x: 500, y: 150, size: 12 }
 		];
 
@@ -357,12 +365,35 @@
 		const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 		const link = document.createElement('a');
 		link.href = URL.createObjectURL(blob);
-		link.download = 'updated_certificate.pdf';
+		link.download = 'certificate.pdf';
 		link.click();
 	}
 
+	async function getOrganizationName(userId) {
+		try {
+			const userDoc = await getDoc(doc(db, 'users', userId));
+			if (userDoc.exists() && userDoc.data().selectedOrg) {
+				const orgId = userDoc.data().selectedOrg;
+				const orgDoc = await getDoc(doc(db, 'organizations', orgId));
+				if (orgDoc.exists()) {
+					return orgDoc.data().name;
+				}
+			}
+		} catch (error) {
+			console.error('Error fetching organization name:', error);
+		}
+		return 'Unknown Organization';
+	}
+
 	// Updated handleSubmit to include certificateId
-	const handleSubmit = (courseName, studentName, studentAddress, dateIssued, certificateId) => {
+	const handleSubmit = (
+		courseName,
+		studentName,
+		studentAddress,
+		dateIssued,
+		certificateId,
+		organizationName
+	) => {
 		if (!isValidDate(dateIssued)) {
 			alert('Invalid date format. Use YYYY-MM-DD.');
 			return;
@@ -373,7 +404,7 @@
 			return;
 		}
 
-		updatePdf(studentName, courseName, studentAddress, dateIssued, certificateId);
+		updatePdf(studentName, courseName, studentAddress, dateIssued, certificateId, organizationName);
 	};
 
 	function isValidDate(date) {
@@ -864,7 +895,8 @@
 																		selectedCertificate.studentName,
 																		selectedCertificate.studentAddress,
 																		selectedCertificate.dateIssued,
-																		selectedCertificate.firebaseId
+																		selectedCertificate.firebaseId,
+																		organizationName
 																	)}
 															>
 																PDF
@@ -881,7 +913,7 @@
 					</div>
 				{/if}
 
-				<footer class="footer pt-3">
+				<!-- <footer class="footer pt-3">
 					<div class="container-fluid">
 						<div class="row align-items-center justify-content-lg-between">
 							<div class="col-lg-6">
@@ -918,7 +950,7 @@
 							</div>
 						</div>
 					</div>
-				</footer>
+				</footer> -->
 			</div>
 		</main>
 		<div class="fixed-plugin">
