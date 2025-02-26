@@ -697,6 +697,9 @@
 								<button class="btn btn-danger" on:click={quitOrganization}
 									>Излез от организация</button
 								>
+								<button class="btn btn-primary" on:click={() => goto('/organization-select')}
+									>Детайли</button
+								>
 							</div>
 						</div>
 					</div>

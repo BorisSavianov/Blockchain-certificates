@@ -10,6 +10,7 @@
 	let user = null;
 	let greeting = 'Loading...';
 	let selectedOrg;
+	const docUrl = '/documentation/195.docx';
 
 	onMount(async () => {
 		fetchMessage();
@@ -525,7 +526,7 @@
 
 					<div class="container-fluid py-4">
 						<div class="row">
-							<div class="col-lg-6 col-12">
+							<div class="col-lg-12 col-24">
 								<div class="row">
 									<div class="col-lg-6 col-md-6 col-12">
 										<div class="card">
@@ -622,20 +623,6 @@
 									</div>
 								</div>
 							</div>
-
-							<div class="col-lg-6 col-12 mt-4 mt-lg-0">
-								<div class="card shadow h-100">
-									<div class="card-header pb-0 p-3">
-										<h6 class="mb-0">Цитат</h6>
-									</div>
-									<div class="card-body pb-0 p-3"><h5 class="mb-0">{greeting}</h5></div>
-									<div class="card-footer pt-0 p-3 d-flex align-items-center">
-										<div>
-											<a class="btn btn-dark mb-0 text-end" on:click={fetchMessage}>Още</a>
-										</div>
-									</div>
-								</div>
-							</div>
 						</div>
 						<div class="row mt-4">
 							<div class="col-lg-7 mb-lg-0 mb-4">
@@ -682,14 +669,15 @@
 										<div class="card-body position-relative z-index-1 d-flex flex-column h-100 p-3">
 											<h5 class="text-white font-weight-bolder mb-4 pt-2">Бърз старт</h5>
 											<p class="text-white">
-												Започнете веднага като прегледате наръчника за платформата
+												Започнете веднага като прегледате документацията на платформата
 											</p>
 											<a
 												class="text-white text-sm font-weight-bold mb-0 icon-move-right mt-auto"
-												href=""
+												href={docUrl}
+												target="_blank"
+												rel="noopener noreferrer"
 											>
-												Виж
-												<i class="fas fa-arrow-right text-sm ms-1" aria-hidden="true"></i>
+												Отвори документация
 											</a>
 										</div>
 									</div>
