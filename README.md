@@ -1,38 +1,115 @@
-# create-svelte
+# Safedocs
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+## Обзор
 
-## Creating a project
+**Safedocs** е платформа за създаване, управление и удостоверяване на автентичността на сертификати и документи чрез блокчейн технология. Тя осигурява сигурен и лесен за употреба начин за генериране на дигитални сертификати, които могат да бъдат удостоверени в блокчейн мрежата по всяко време. Целевите групи включват образователни институции и компании, които трябва да гарантират автентичността и сигурността на издаваните сертификати и документи.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Автори
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- **Виктор Йорданов Недев**
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+  - Email: viktornedev08@gmail.com
+  - Училище: ПМГ "Васил Друмев" (10д клас)
 
-## Developing
+- **Борис Момчилов Савянов**
+  - Email: bsavyanov@gmail.com
+  - Училище: ПМГ "Васил Друмев" (10д клас)
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+**Ръководител:** Георги Игнатов (Старши учител по Информационни технологии и Информатика)
 
-```bash
-npm run dev
+- Email: g_ignatov@mail.bg
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Функции
 
-## Building
+- **Издаване на сертификати чрез блокчейн**
+- **Сигурно удостоверяване с Firebase**
+- **Съхранение на сертификати в реално време**
+- **Смарт договор за блокчейн операции**
+- **Генериране на PDF с вградени QR кодове**
+- **Безпроблемна интеграция с MetaMask**
 
-To create a production version of your app:
+## Архитектура
 
-```bash
-npm run build
-```
+Системата следва клиент-сървър модел:
 
-You can preview the production build with `npm run preview`.
+- **Фронтенд:** Разработен със SvelteKit
+- **Бекенд:** Използва Firebase и Ethereum смарт договори
+- **Удостоверяване:** Управлявано чрез Firebase Authentication
+- **База данни:** Firebase Realtime Database и Firestore
+- **Блокчейн:** Ethereum смарт договори за управление на сертификати
+- **Генериране на PDF:** Използва `pdf-lib` за създаване на сертификати
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## Използвани технологии
+
+- **Фронтенд:** HTML, CSS, JavaScript, SvelteKit
+- **Бекенд:** Node.js, Firebase, Solidity
+- **Инструменти:**
+  - Visual Studio Code
+  - Git & GitHub
+  - MetaMask
+  - Ganache (виртуализация на Ethereum)
+  - NPM (Node Package Manager)
+
+## Инсталация и настройка
+
+### Предварителни изисквания
+
+Уверете се, че имате инсталирани:
+
+- Node.js
+- npm
+- Visual Studio Code
+- Git Bash
+- MetaMask
+
+### Стъпки за стартиране на проекта
+
+1. Клонирайте хранилището:
+
+   ```sh
+   git clone https://github.com/BorisSavianov/Blockchain-certificates.git
+   cd Blockchain-certificates
+   ```
+
+2. Отворете проекта във Visual Studio Code.
+
+3. Отворете два Bash терминала и един PowerShell терминал.
+
+4. В първия Bash терминал инсталирайте и стартирайте Ganache:
+
+   ```sh
+   npm install ganache --global --force
+   ganache
+   ```
+
+5. Конфигурирайте MetaMask:
+
+   - Отворете MetaMask и отидете на **Add Network**
+   - Активирайте **Show Test Networks**
+   - Добавете персонализирана мрежа с данните от Ganache
+
+6. Деплойнете смарт договора във вторият Bash терминал:
+
+   ```sh
+   npx hardhat run scripts/deploy.cjs --network localhost
+   ```
+
+7. Копирайте адреса на договора от първия Bash терминал и го поставете в:
+
+   ```sh
+   src/lib/eth.js
+   ```
+
+8. Стартирайте сървъра за разработка:
+
+   ```sh
+   npm run dev
+   ```
+
+9. Отворете посочения линк, за да достъпите платформата.
+
+10. След регистрация, извлечете частен ключ от терминала на Ganache и го импортирайте в MetaMask.
+
+## Заключение
+
+Платформата Safedocs осигурява сигурен и иновативен начин за управление на сертификати, използвайки блокчейн технология. Тя гарантира надеждност, ефективност и удобство, като повишава доверието в процесите на цифрово сертифициране.
