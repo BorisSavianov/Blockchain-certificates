@@ -100,11 +100,11 @@
 				const orgData = orgDoc.data();
 				if (orgData.createdBy === user.uid) {
 					// Automatically add the owner to the members list
-					await updateDoc(doc(db, 'organizations', orgId, 'members', user.uid), {
+					await setDoc(doc(db, 'organizations', orgId, 'members', user.uid), {
 						uid: user.uid
 					});
 					await updateDoc(doc(db, 'users', user.uid), { selectedOrg: orgId });
-					alert('You own this organization and have been added automatically.');
+					alert('Влязохте в организацията.');
 					return;
 				}
 			}
@@ -113,7 +113,7 @@
 			await setDoc(doc(db, 'organizations', orgId, 'requests', user.uid), {
 				uid: user.uid
 			});
-			alert('Request sent to join the organization. Wait for approval.');
+			alert('Изпратеана е заявка. Изчакайте за потвърждение.');
 		}
 	}
 

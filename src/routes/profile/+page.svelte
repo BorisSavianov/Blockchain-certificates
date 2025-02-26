@@ -708,7 +708,13 @@
 								<h6 class="mb-0">Влез в организация</h6>
 							</div>
 							<div class="card-body p-3">
-								<button class="btn btn-primary" href="/organization-select">Намери</button>
+								<button
+									class="btn btn-primary"
+									href="/organization-select"
+									on:click={() => goto('/organization-select')}
+								>
+									Намери
+								</button>
 							</div>
 						</div>
 					</div>
