@@ -149,9 +149,9 @@
 
 		// Координати за замяна на текста
 		const replacements = [
-			{ text: courseName, x: 320, y: 400, size: 58 },
+			{ text: courseName, x: 280, y: 400, size: 58 },
 			{ text: studentName, x: 330, y: 290, size: 24 },
-			{ text: organizationName, x: 240, y: 230, size: 12 },
+			{ text: organizationName, x: 400, y: 230, size: 12 },
 			{ text: dateIssued, x: 500, y: 150, size: 12 }
 		];
 

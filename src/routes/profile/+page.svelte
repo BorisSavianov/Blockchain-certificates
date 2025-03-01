@@ -510,14 +510,33 @@
 				<div class="col-12 {role === 'organization' ? 'col-xl-4' : 'col-xl-6'} mb-5">
 					<div class="card h-100">
 						<div class="card-header pb-0 p-3">
-							<h6 class="mb-0">Настройки</h6>
+							<div class="row">
+								<div class="col-md-8 d-flex align-items-center">
+									<h6 class="mb-0">Настройки</h6>
+								</div>
+								<div class="col-md-4 text-end">
+									<a href="javascript:;">
+										<i
+											class="fa fa-gear text-secondary text-sm"
+											data-bs-toggle="tooltip"
+											data-bs-placement="top"
+											title="Edit Profile"
+										></i>
+									</a>
+								</div>
+							</div>
 						</div>
 						<div class="card-body p-3">
 							<h6 class="text-uppercase text-body text-xs font-weight-bolder">Акаунт</h6>
+							<i></i>
 							<ul class="list-group">
 								<li class="list-group-item border-0 px-0">
 									<div class="form-check form-switch ps-0">
-										<button class="btn bg-danger text-white mb-0" on:click={deleteAccount}>
+										<button
+											class="btn bg-danger text-white mb-0"
+											style="width: 150px;"
+											on:click={deleteAccount}
+										>
 											Изтрий акаунт
 										</button>
 									</div>
@@ -528,6 +547,7 @@
 											class="btn bg-primary text-white mb-0"
 											data-bs-toggle="modal"
 											data-bs-target="#changeName"
+											style="width: 150px;"
 										>
 											Смени име
 										</button>
@@ -576,6 +596,7 @@
 											class="btn bg-primary text-white mb-0"
 											data-bs-toggle="modal"
 											data-bs-target="#changeEmail"
+											style="width: 150px;"
 										>
 											Смени имейл
 										</button>
@@ -671,11 +692,25 @@
 					</div>
 				</div>
 				{#if role === 'organization' && organizationDetails}
-					<div class="col-12 col-xl-4">
+					<div class="col-12 col-xl-4 mb-5">
 						<div class="card h-100">
 							<div class="card-header pb-0 p-3">
-								<h6 class="mb-0">{organizationDetails.name}</h6>
-								<p>Основател: {orgFounder}</p>
+								<div class="row">
+									<div class="col-md-8">
+										<h6 class="mb-0">{organizationDetails.name}</h6>
+										<p>Основател: {orgFounder}</p>
+									</div>
+									<div class="col-md-4 text-end">
+										<a href="javascript:;">
+											<i
+												class="fa fa-building text-secondary text-sm"
+												data-bs-toggle="tooltip"
+												data-bs-placement="top"
+												title="Edit Profile"
+											></i>
+										</a>
+									</div>
+								</div>
 							</div>
 							<div class="card-body p-3">
 								<h5>Членове</h5>
@@ -694,12 +729,16 @@
 										</li>
 									{/each}
 								</ul>
-								<button class="btn btn-danger" on:click={quitOrganization}
+								<button class="btn btn-danger" style="width: 200px;" on:click={quitOrganization}
 									>Излез от организация</button
 								>
-								<button class="btn btn-primary" on:click={() => goto('/organization-select')}
-									>Детайли</button
-								>
+								{#if isFounder()}
+									<button
+										class="btn btn-primary"
+										style="width: 200px;"
+										on:click={() => goto('/organization-select')}>Детайли</button
+									>
+								{/if}
 							</div>
 						</div>
 					</div>

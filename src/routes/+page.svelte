@@ -71,19 +71,17 @@
 		}
 
 		// Query Firestore for user's certificates (excluding 'tracker')
-		const startDate = new Date();
-		startDate.setDate(today.getDate() - 5); // Go 5 days back
 		const certificatesRef = collection(db, 'users', userId, 'certificates');
-		const q = query(certificatesRef, where('dateIssued', '>=', startDate.toISOString()));
+		const snapshot = await getDocs(certificatesRef);
 
-		const snapshot = await getDocs(q);
 		snapshot.forEach((doc) => {
 			if (doc.id !== 'tracker') {
-				// Exclude 'tracker' document
-				const data = doc.data();
-				const issuedDate = data.dateIssued.split('T')[0]; // Extract YYYY-MM-DD
-				if (certificateCounts[issuedDate] !== undefined) {
-					certificateCounts[issuedDate]++; // Increment count
+				const createTime = doc._document?.createTime?.timestamp?.seconds; // Get creation time in seconds
+				if (createTime) {
+					const issuedDate = new Date(createTime * 1000).toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+					if (certificateCounts[issuedDate] !== undefined) {
+						certificateCounts[issuedDate]++; // Increment count
+					}
 				}
 			}
 		});
@@ -312,11 +310,6 @@
 					id="sidenav-main"
 				>
 					<div class="sidenav-header">
-						<i
-							class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
-							aria-hidden="true"
-							id="iconSidenav"
-						></i>
 						<a class="navbar-brand m-0" href="/">
 							<img src="assets/img/logo3.png" class="navbar-brand-img h-100" alt="main_logo" />
 						</a>
@@ -538,7 +531,7 @@
 															class="icon icon-shape bg-white shadow text-center border-radius-2xl"
 														>
 															<i
-																class="ni ni-circle-08 text-dark text-gradient text-lg opacity-10"
+																class="fa fa-address-book text-dark text-gradient text-lg opacity-10"
 																aria-hidden="true"
 															></i>
 														</div>
@@ -561,7 +554,7 @@
 															class="icon icon-shape bg-white shadow text-center border-radius-2xl"
 														>
 															<i
-																class="ni ni-active-40 text-dark text-gradient text-lg opacity-10"
+																class="fa fa-users text-dark text-gradient text-lg opacity-10"
 																aria-hidden="true"
 															></i>
 														</div>
@@ -586,7 +579,7 @@
 															class="icon icon-shape bg-white shadow text-center border-radius-2xl"
 														>
 															<i
-																class="ni ni-email-83 text-dark text-gradient text-lg opacity-10"
+																class="fa fa-question-circle text-dark text-gradient text-lg opacity-10"
 																aria-hidden="true"
 															></i>
 														</div>
@@ -610,7 +603,7 @@
 															class="icon icon-shape bg-white shadow text-center border-radius-2xl"
 														>
 															<i
-																class="ni ni-like-2 text-dark text-gradient text-lg opacity-10"
+																class="fa fa-user text-dark text-gradient text-lg opacity-10"
 																aria-hidden="true"
 															></i>
 														</div>

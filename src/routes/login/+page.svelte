@@ -111,7 +111,25 @@
 </script>
 
 <html lang="en">
-	<head><link rel="stylesheet" href="css/login.css" /></head>
+	<head
+		><link rel="stylesheet" href="css/login.css" />
+		<!--     Fonts and icons     -->
+		<link
+			href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800"
+			rel="stylesheet"
+		/>
+		<!-- Nucleo Icons -->
+		<link
+			href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-icons.css"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-svg.css"
+			rel="stylesheet"
+		/>
+		<!-- Font Awesome Icons -->
+		<script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+	</head>
 	<body>
 		<div class="container" class:isRightPanelActive id="container">
 			<!-- Sign Up Form -->
@@ -120,7 +138,8 @@
 					<h1>Създай акаунт</h1>
 					<div class="social-container">
 						<a class="social" on:click|preventDefault={signInWithGoogle}>
-							<i class="fab fa-google-plus-g"></i>
+							<i class="fa fa-google text-dark text-gradient text-lg opacity-10" aria-hidden="true"
+							></i>
 						</a>
 					</div>
 					<span>или използвайте вашият имейл за регистрация</span>
@@ -142,7 +161,8 @@
 					<h1>Вписване</h1>
 					<div class="social-container">
 						<a class="social" on:click|preventDefault={signInWithGoogle}>
-							<i class="fab fa-google-plus-g"></i>
+							<i class="fa fa-google text-dark text-gradient text-lg opacity-10" aria-hidden="true"
+							></i>
 						</a>
 					</div>
 					<span>или използвайте вашият акаунт</span>
